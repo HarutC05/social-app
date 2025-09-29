@@ -1,0 +1,50 @@
+.container {
+    background-color: #1f2125;
+    color: #929292;
+    font-family: "Open Sans", sans-serif;
+    border-top: 1px solid #333;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.links a {
+    color: #929292;
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s ease-in-out;
+}
+
+.links a:hover {
+    color: #cfcfcf;
+}
+
+.social {
+    display: flex;
+    gap: 0.8rem;
+    color: #929292;
+}
+
+.social :global(svg) {
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.social :global(svg:hover) {
+    color: #cfcfcf;
+}
+
+.copy {
+    font-size: 12px;
+    color: #777;
+    text-align: center;
+}

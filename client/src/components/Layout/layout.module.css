@@ -1,0 +1,28 @@
+.layoutContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    color: white;
+}
+
+.defaultBackground {
+    background: var(--background);
+}
+
+.homeBackground {
+    background: #2b2b2b;
+}
+
+.layoutMain {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem;
+}
+
+.contentWrapper {
+    width: 100%;
+    max-width: 1200px;
+    box-sizing: border-box;
+}

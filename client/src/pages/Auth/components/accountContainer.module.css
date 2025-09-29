@@ -1,0 +1,121 @@
+.container {
+    font-family: "Open Sans", sans-serif;
+    color: #929292;
+    height: 100%;
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    font-weight: 100;
+    letter-spacing: 2px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 50px;
+}
+
+.form button {
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+.eyeIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.optionsRow {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.rememberMe {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.checkbox {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #929292;
+    border-radius: 4px;
+    background-color: #000;
+    cursor: pointer;
+    position: relative;
+    vertical-align: 50%;
+    margin-right: 8px;
+    transition: all 0.2s ease-in-out;
+}
+
+.checkbox:hover {
+    border-color: #fff;
+}
+
+.checkbox:checked {
+    border: none;
+}
+
+.checkbox:checked::after {
+    content: "";
+    position: absolute;
+    top: 2.5px;
+    left: 33%;
+    width: 4px;
+    height: 8px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.forgotPassword {
+    color: #929292;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.forgotPassword:hover {
+    text-decoration: none;
+    text-decoration: underline;
+    color: #ffffff;
+}
+
+.switchAuth {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 16px;
+    color: #b5b5b5;
+}
+
+.switchLink {
+    color: #ffffff;
+    font-weight: 600;
+    margin-left: 4px;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.switchLink:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}

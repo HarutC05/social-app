@@ -1,0 +1,32 @@
+.iconSquare {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background-color: #303339;
+    cursor: pointer;
+    transition:
+        transform 0.5s ease,
+        background-color 0.5s ease;
+}
+
+.iconSquare:active {
+    transform: translateY(1px);
+}
+
+.iconSquare :global(svg) {
+    stroke: #cfcfcf;
+    transition:
+        stroke 0.12s ease,
+        opacity 0.12s ease;
+}
+
+.iconSquare:hover {
+    background-color: #333438;
+}
+
+.iconSquare:hover :global(svg) {
+    stroke: #929292;
+}

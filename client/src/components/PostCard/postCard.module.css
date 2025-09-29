@@ -1,0 +1,209 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+.card {
+    background-color: rgba(31, 33, 37, 0.9);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    font-family: "Open Sans", sans-serif;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.headerMeta {
+    display: flex;
+    flex-direction: column;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #333;
+}
+
+.author {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.imageWrapper {
+    margin: 0.75rem 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.postImage {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 420px;
+    border-radius: 10px;
+}
+
+.title {
+    font-size: 1.25rem;
+    margin: 0.5rem 0;
+    font-weight: 600;
+}
+
+.content {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: #ddd;
+    line-height: 1.5;
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family:
+        "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #bbb;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 10px;
+    transition:
+        background 0.12s ease,
+        color 0.12s ease,
+        transform 0.08s ease;
+}
+
+.action:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.actionCount {
+    margin-left: 4px;
+    color: inherit;
+}
+
+.liked {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.08);
+}
+
+.liked:hover {
+    color: #ff6b6b;
+}
+
+.commentsSection {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.commentBox {
+    display: flex;
+    gap: 0.5rem;
+    border-top: 1px solid #333;
+    padding-top: 0.75rem;
+}
+
+.addButton {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background-color: #661753;
+    color: white;
+    border: none;
+    cursor: pointer;
+    min-width: 72px;
+    font-weight: 600;
+    height: 50px;
+}
+
+.addButton:disabled,
+.addButton[disabled] {
+    background-color: #3a3a3a;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.addButton:disabled:hover,
+.addButton[disabled]:hover {
+    background-color: #3a3a3a;
+    color: #888;
+}
+
+.commentsList {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.commentItem {
+    background-color: #232428;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #ddd;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.commentAuthor {
+    font-weight: 700;
+    color: #fff;
+}
+
+.commentText {
+    color: #d1d1d1;
+}
+
+.viewMore {
+    background: none;
+    border: none;
+    color: #9a9a9a;
+    cursor: pointer;
+    padding: 6px 0;
+    text-align: left;
+}
+.viewMore:hover {
+    color: #fff;
+}
+
+@media (max-width: 520px) {
+    .commentBox {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .addButton {
+        width: 100%;
+    }
+}

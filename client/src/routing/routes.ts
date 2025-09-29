@@ -1,0 +1,14 @@
+export const ROUTES = {
+    HOME: "/",
+    ABOUT: "/about",
+    PROFILE: "/profile",
+    MY_PROFILE: "/me",
+    EDIT_PROFILE: "/edit-profile",
+    POST: "/post",
+    LOGIN: "/login",
+    REGISTER: "/register",
+    HELP: "/help",
+    CONTACT: "/contact",
+    FORGOT_PASSWORD: "/forgot-password",
+    CREATE_POST: "/create",
+};
