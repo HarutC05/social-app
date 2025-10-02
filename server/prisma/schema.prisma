@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  username      String         @unique @db.VarChar(50)
+  email         String         @unique @db.VarChar(255)
+  password_hash String         @db.VarChar(255)
+  bio           String?        @db.Text
+  avatar_url    String?        @db.VarChar(255)
+  created_at    DateTime?      @default(now()) @db.Timestamp(0)
+  updated_at    DateTime?      @default(now()) @db.Timestamp(0)
+
+  // Relations
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  refreshTokens RefreshToken[]   
+
+  @@map("users")
+}
+
+model Post {
+  id         Int       @id @default(autoincrement())
+  authorId   Int
+  title      String    @db.VarChar(255)     
+  content    String    @db.Text
+  image_url  String?   @db.VarChar(255)
+  tags       String?   @db.VarChar(255)     
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+
+  // Relations
+  author     User      @relation(fields: [authorId], references: [id])
+  comments   Comment[]
+  likes      Like[]
+
+  @@map("posts")
+}
+
+
+model Comment {
+  id         Int       @id @default(autoincrement())
+  postId     Int
+  authorId   Int
+  content    String    @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+
+  // Relations
+  post       Post      @relation(fields: [postId], references: [id])
+  author     User      @relation(fields: [authorId], references: [id])
+
+  @@map("comments")
+  @@index([postId])
+  @@index([authorId])
+}
+
+model Like {
+  id         Int       @id @default(autoincrement())
+  postId     Int
+  userId     Int
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+
+  // Relations
+  post       Post      @relation(fields: [postId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId], map: "unique_like")
+  @@map("likes")
+  @@index([userId])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  tokenHash String   @db.VarChar(255)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("refresh_tokens")
+}

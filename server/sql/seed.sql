@@ -1,2 +1,0 @@
-USE social_app;
-
