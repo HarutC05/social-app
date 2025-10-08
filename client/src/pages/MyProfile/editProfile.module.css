@@ -5,8 +5,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
-    width: 100%;
 }
 
 .title {
@@ -30,6 +28,20 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+}
+
+.previewRow {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #661753;
 }
 
 .label {

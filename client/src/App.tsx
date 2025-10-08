@@ -1,21 +1,19 @@
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routing/AppRoutes";
-import { useState } from "react";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 
-export default function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(true);
-
-    const handleLogout = () => {
-        // clear tokens/session storage if needed
-        setIsAuthenticated(false);
-    };
-
+export default function AppWrapper() {
     return (
-        <BrowserRouter>
-            <AppRoutes
-                isAuthenticated={isAuthenticated}
-                onLogout={handleLogout}
-            />
-        </BrowserRouter>
+        <AuthProvider>
+            <BrowserRouter>
+                <AppRoutesWrapper />
+            </BrowserRouter>
+        </AuthProvider>
     );
+}
+
+function AppRoutesWrapper() {
+    const { currentUser, logout } = useAuth();
+
+    return <AppRoutes isAuthenticated={!!currentUser} onLogout={logout} />;
 }

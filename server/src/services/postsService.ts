@@ -10,6 +10,8 @@ interface CreatePostInput {
 
 interface GetPostsOptions {
     userId?: number;
+    page?: number;
+    limit?: number;
 }
 
 interface UpdatePostInput {
@@ -33,41 +35,83 @@ interface Post {
         email: string;
         avatar_url?: string | null;
     };
+    likesCount?: number;
+    commentsCount?: number;
 }
 
 class PostsService {
     public async createPost(data: CreatePostInput): Promise<Post> {
-        try {
-            const created = await prisma.post.create({
-                data: {
-                    title: data.title,
-                    content: data.content,
-                    image_url: data.image_url ?? null,
-                    tags: data.tags ?? null,
-                    authorId: data.authorId,
-                },
-                include: {
-                    author: {
-                        select: {
-                            id: true,
-                            username: true,
-                            email: true,
-                            avatar_url: true,
-                        },
+        const created = await prisma.post.create({
+            data: {
+                title: data.title,
+                content: data.content,
+                image_url: data.image_url ?? null,
+                tags: data.tags ?? null,
+                authorId: data.authorId,
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        avatar_url: true,
                     },
                 },
-            });
-
-            return created as Post;
-        } catch (error) {
-            throw new Error(`Error creating post: ${error}`);
-        }
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true,
+                    },
+                },
+            },
+        });
+        return {
+            ...created,
+            likesCount: created._count?.likes ?? 0,
+            commentsCount: created._count?.comments ?? 0,
+        } as Post;
     }
 
     public async getPostById(postId: number): Promise<Post | null> {
-        try {
-            const post = await prisma.post.findUnique({
-                where: { id: postId },
+        const post = await prisma.post.findUnique({
+            where: { id: postId },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        avatar_url: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true,
+                    },
+                },
+            },
+        });
+        if (!post) return null;
+        return {
+            ...post,
+            likesCount: post._count?.likes ?? 0,
+            commentsCount: post._count?.comments ?? 0,
+        } as Post;
+    }
+
+    public async getPosts(
+        options?: GetPostsOptions
+    ): Promise<{ posts: Post[]; total: number; page: number; limit: number }> {
+        const page = options?.page && options.page > 0 ? options.page : 1;
+        const limit = options?.limit && options.limit > 0 ? options.limit : 10;
+        const skip = (page - 1) * limit;
+        const where = options?.userId ? { authorId: options.userId } : {};
+        const [total, posts] = await Promise.all([
+            prisma.post.count({ where }),
+            prisma.post.findMany({
+                where,
                 include: {
                     author: {
                         select: {
@@ -77,84 +121,82 @@ class PostsService {
                             avatar_url: true,
                         },
                     },
-                },
-            });
-
-            return post as Post | null;
-        } catch (error) {
-            throw new Error(`Error fetching post: ${error}`);
-        }
-    }
-
-    public async getPosts(options?: GetPostsOptions): Promise<Post[]> {
-        try {
-            const posts = await prisma.post.findMany({
-                where: options?.userId ? { authorId: options.userId } : {},
-                include: {
-                    author: {
+                    _count: {
                         select: {
-                            id: true,
-                            username: true,
-                            email: true,
-                            avatar_url: true,
+                            likes: true,
+                            comments: true,
                         },
                     },
                 },
                 orderBy: { created_at: "desc" },
-            });
-
-            return posts as Post[];
-        } catch (error) {
-            throw new Error(`Error fetching posts: ${error}`);
-        }
+                skip,
+                take: limit,
+            }),
+        ]);
+        const mapped = posts.map((p) => ({
+            ...p,
+            likesCount: p._count?.likes ?? 0,
+            commentsCount: p._count?.comments ?? 0,
+        })) as Post[];
+        return { posts: mapped, total, page, limit };
     }
 
     public async updatePost(
         postId: number,
         data: UpdatePostInput
     ): Promise<Post> {
-        try {
-            const updated = await prisma.post.update({
-                where: { id: postId },
-                data: data,
-                include: {
-                    author: {
-                        select: {
-                            id: true,
-                            username: true,
-                            email: true,
-                            avatar_url: true,
-                        },
+        const updated = await prisma.post.update({
+            where: { id: postId },
+            data,
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        avatar_url: true,
                     },
                 },
-            });
-
-            return updated as Post;
-        } catch (error) {
-            throw new Error(`Error updating post: ${error}`);
-        }
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true,
+                    },
+                },
+            },
+        });
+        return {
+            ...updated,
+            likesCount: updated._count?.likes ?? 0,
+            commentsCount: updated._count?.comments ?? 0,
+        } as Post;
     }
 
     public async deletePost(postId: number): Promise<Post> {
-        try {
-            const deleted = await prisma.post.delete({
-                where: { id: postId },
-                include: {
-                    author: {
-                        select: {
-                            id: true,
-                            username: true,
-                            email: true,
-                            avatar_url: true,
-                        },
+        const deleted = await prisma.post.delete({
+            where: { id: postId },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        avatar_url: true,
                     },
                 },
-            });
-
-            return deleted as Post;
-        } catch (error) {
-            throw new Error(`Error deleting post: ${error}`);
-        }
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true,
+                    },
+                },
+            },
+        });
+        return {
+            ...deleted,
+            likesCount: deleted._count?.likes ?? 0,
+            commentsCount: deleted._count?.comments ?? 0,
+        } as Post;
     }
 }
 

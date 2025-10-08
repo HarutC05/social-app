@@ -1,27 +1,27 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./postCard.module.css";
 import { likeIcon } from "../../assets/icons/likeIcon";
 import { commentIcon } from "../../assets/icons/commentIcon";
 import Input from "../Input/Input";
 import Button from "../Button/Button";
-import { mockComments } from "../../components/MockData/comments";
-import { mockUsers } from "../../components/MockData/users";
+import { Link } from "react-router-dom";
+import {
+    getCommentsByPost,
+    createComment,
+    type Comment as ApiComment,
+} from "../../api/commentsApi";
+import { likePost, unlikePost } from "../../api/likesApi";
 
 interface PostCardProps {
-    postId?: number;
+    postId: number;
     title: string;
     content: string;
     author: string;
+    authorId: number;
     avatar: string;
     likes: number;
     comments: number;
     image?: string;
-}
-
-interface Comment {
-    id: number;
-    author: string;
-    content: string;
 }
 
 export default function PostCard({
@@ -29,9 +29,9 @@ export default function PostCard({
     title,
     content,
     author,
+    authorId,
     avatar,
     likes,
-    comments,
     image,
 }: PostCardProps) {
     const [liked, setLiked] = useState(false);
@@ -39,73 +39,49 @@ export default function PostCard({
     const [showComments, setShowComments] = useState(false);
     const [showAllComments, setShowAllComments] = useState(false);
     const [commentInput, setCommentInput] = useState("");
+    const [commentList, setCommentList] = useState<ApiComment[]>([]);
 
-    const initialComments = useMemo(() => {
-        let seeded: Comment[] = [];
+    useEffect(() => {
+        if (!postId) return;
+        getCommentsByPost(postId)
+            .then((data) => setCommentList(data))
+            .catch((err) => console.error("Error fetching comments:", err));
+    }, [postId]);
 
-        if (typeof postId === "number") {
-            const fromMock = mockComments
-                .filter((c) => c.postId === postId)
-                .map((c) => {
-                    const user = mockUsers.find((u) => u.id === c.userId);
-                    return {
-                        id: c.id,
-                        author: user?.username ?? `User ${c.userId}`,
-                        content: c.content,
-                    };
-                });
-            seeded = fromMock;
+    const toggleLike = async () => {
+        try {
+            if (liked) {
+                await unlikePost(postId);
+                setLikeCount((prev) => prev - 1);
+            } else {
+                await likePost(postId);
+                setLikeCount((prev) => prev + 1);
+            }
+            setLiked((prev) => !prev);
+        } catch (error) {
+            console.error("Error toggling like:", error);
         }
-
-        const placeholdersNeeded = Math.max(0, comments - seeded.length);
-        for (let i = 0; i < placeholdersNeeded; i++) {
-            seeded.push({
-                id: (seeded.length + 1) * 100 + i,
-                author: `User${i + 1}`,
-                content: `Placeholder comment #${i + 1}`,
-            });
-        }
-
-        if (seeded.length === 0 && comments === 0) {
-            seeded = [
-                { id: 1, author: "Alice", content: "Nice post!" },
-                { id: 2, author: "Bob", content: "Thanks for sharing." },
-                { id: 3, author: "Charlie", content: "Love this." },
-            ];
-        }
-
-        return seeded;
-    }, [postId, comments]);
-
-    const [commentList, setCommentList] = useState<Comment[]>(initialComments);
-
-    const toggleLike = () => {
-        setLiked((prev) => !prev);
-        setLikeCount((prev) => prev + (liked ? -1 : 1));
     };
 
     const toggleComments = () => {
         setShowComments((prev) => !prev);
-        if (!showComments) {
-            setShowAllComments(false);
-        }
+        if (!showComments) setShowAllComments(false);
     };
 
-    const addComment = () => {
+    const addComment = async () => {
         const text = commentInput.trim();
         if (!text) return;
-        const newComment: Comment = {
-            id: Date.now(),
-            author: "You",
-            content: text,
-        };
-        setCommentList((prev) => [newComment, ...prev]);
-        setCommentInput("");
+        try {
+            const newComment = await createComment(postId, text);
+            setCommentList((prev) => [newComment, ...prev]);
+            setCommentInput("");
+        } catch (error) {
+            console.error("Error adding comment:", error);
+        }
     };
 
     const VISIBLE_COUNT = 2;
     const totalCount = commentList.length;
-
     const shownComments = showAllComments
         ? commentList
         : commentList.slice(0, VISIBLE_COUNT);
@@ -120,13 +96,23 @@ export default function PostCard({
                     className={styles.avatar}
                 />
                 <div className={styles.headerMeta}>
-                    <span className={styles.author}>{author}</span>
+                    <Link
+                        to={`/users/${authorId}`}
+                        className={styles.authorLink}
+                    >
+                        <span className={styles.author}>{author}</span>
+                    </Link>
                 </div>
             </div>
 
             {image && (
                 <div className={styles.imageWrapper}>
-                    <img src={image} alt={title} className={styles.postImage} />
+                    <img
+                        src={image.replace(/(\?blur=\d+)/, "")}
+                        alt={title}
+                        className={styles.postImage}
+                        loading="lazy"
+                    />
                 </div>
             )}
 
@@ -157,7 +143,11 @@ export default function PostCard({
                             placeholder="Add a comment..."
                             icon={commentIcon}
                             value={commentInput}
-                            onChange={(e) => setCommentInput(e.target.value)}
+                            onChange={(e) =>
+                                setCommentInput(
+                                    (e.target as HTMLInputElement).value
+                                )
+                            }
                         />
                         <Button
                             type="button"
@@ -173,7 +163,7 @@ export default function PostCard({
                         {shownComments.map((c) => (
                             <div key={c.id} className={styles.commentItem}>
                                 <div className={styles.commentAuthor}>
-                                    {c.author}
+                                    {c.authorUsername || `User ${c.authorId}`}
                                 </div>
                                 <div className={styles.commentText}>
                                     {c.content}

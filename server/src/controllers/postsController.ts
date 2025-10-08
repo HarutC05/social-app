@@ -39,10 +39,19 @@ export async function getPosts(
     next: NextFunction
 ): Promise<void> {
     try {
-        const posts = await postsService.getPosts();
+        const page = req.query.page ? Number(req.query.page) : 1;
+        const limit = req.query.limit ? Number(req.query.limit) : 10;
+        const userId = req.query.userId ? Number(req.query.userId) : undefined;
+        const { posts, total } = await postsService.getPosts({
+            page,
+            limit,
+            userId,
+        });
+        const totalPages = Math.ceil(total / (limit || 1));
         res.status(200).json({
             message: "Successfully fetched posts",
             data: posts,
+            meta: { total, page, limit, totalPages },
         });
     } catch (error) {
         next(error);

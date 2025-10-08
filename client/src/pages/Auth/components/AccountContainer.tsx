@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent, type JSX } from "react";
 import { emailIcon } from "../../../assets/icons/emailIcon";
 import { lockIcon } from "../../../assets/icons/lockIcon";
 import { eyeOpenIcon, eyeClosedIcon } from "../../../assets/icons/eyeIcon";
@@ -7,7 +7,8 @@ import { confirmPasswordIcon } from "../../../assets/icons/confirmPasswordIcon";
 import classNames from "./accountContainer.module.css";
 import Input from "../../../components/Input/Input";
 import Button from "../../../components/Button/Button";
-import type { JSX } from "react";
+import { useAuth } from "../../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface AccountContainerProps {
     infoType: "login" | "register";
@@ -19,12 +20,65 @@ export default function AccountContainer({
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const { login, register } = useAuth();
+    const navigate = useNavigate();
+
+    const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) =>
+        setUsername(e.target.value);
+
+    const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) =>
+        setEmail(e.target.value);
+
+    const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) =>
+        setPassword(e.target.value);
+
+    const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) =>
+        setConfirmPassword(e.target.value);
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setError(null);
+
+        if (infoType === "register" && password !== confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+
+            if (infoType === "login") {
+                await login({ email, password });
+                navigate("/");
+            } else {
+                await register({ username, email, password });
+                navigate("/");
+            }
+        } catch (err: unknown) {
+            console.error("Auth failed:", err);
+            setError(
+                err instanceof Error ? err.message : "Something went wrong"
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className={classNames.container}>
             <h1 className={classNames.title}>
                 {infoType === "login" ? "Login" : "Sign Up"}
             </h1>
-            <form className={classNames.form}>
+
+            <form className={classNames.form} onSubmit={handleSubmit}>
                 {infoType === "register" && (
                     <Input
                         icon={usernameIcon}
@@ -32,6 +86,8 @@ export default function AccountContainer({
                         id="username"
                         name="username"
                         placeholder="Username"
+                        value={username}
+                        onChange={handleUsernameChange}
                         required
                     />
                 )}
@@ -42,6 +98,8 @@ export default function AccountContainer({
                     id="email"
                     name="email"
                     placeholder="Email ID"
+                    value={email}
+                    onChange={handleEmailChange}
                     required
                 />
 
@@ -51,6 +109,8 @@ export default function AccountContainer({
                     id="password"
                     name="password"
                     placeholder="Password"
+                    value={password}
+                    onChange={handlePasswordChange}
                     required
                 >
                     <span
@@ -69,6 +129,8 @@ export default function AccountContainer({
                         id="confirmPassword"
                         name="confirmPassword"
                         placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={handleConfirmPasswordChange}
                         required
                     >
                         <span
@@ -101,8 +163,14 @@ export default function AccountContainer({
                     </div>
                 )}
 
-                <Button type="submit">
-                    {infoType === "login" ? "LOGIN" : "SIGN UP"}
+                {error && <p className={classNames.error}>{error}</p>}
+
+                <Button type="submit" disabled={isLoading}>
+                    {isLoading
+                        ? "Please wait..."
+                        : infoType === "login"
+                          ? "LOGIN"
+                          : "SIGN UP"}
                 </Button>
             </form>
 

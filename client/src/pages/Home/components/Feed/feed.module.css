@@ -1,0 +1,44 @@
+.feedContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.pageBtn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    background-color: #661753;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.pageBtn:disabled {
+    background-color: #3a3a3a;
+    cursor: not-allowed;
+    color: #888;
+}
+
+.pageBtn:hover:not(:disabled) {
+    background-color: #7f1d8c;
+}
+
+.pageInfo {
+    font-weight: 600;
+    color: #ddd;
+}
+
+.activePage {
+    background-color: #7f1d8c;
+}

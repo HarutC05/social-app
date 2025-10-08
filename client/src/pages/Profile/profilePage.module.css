@@ -1,0 +1,48 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.profileHeader {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #333;
+}
+
+.meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.username {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.bio {
+    font-size: 1rem;
+    color: #ccc;
+    line-height: 1.4;
+}
+
+.posts {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}

@@ -1,10 +1,8 @@
-import PostCard from "../../components/PostCard/PostCard";
-import { mockPosts } from "../../components/MockData/posts";
-import { mockUsers } from "../../components/MockData/users";
 import styles from "./homePage.module.css";
 import HeroBanner from "./components/HeroBanner/HeroBanner";
 import LeftPanel from "./components/LeftPanel/LeftPanel";
-import RightPanel from "./components/RIghtPanel/RightPanel";
+import RightPanel from "./components/RightPanel/RightPanel";
+import Feed from "./components/Feed/Feed";
 
 export default function HomePage() {
     return (
@@ -13,24 +11,7 @@ export default function HomePage() {
             <div className={styles.center}>
                 <HeroBanner />
                 <div className={styles.feed}>
-                    {mockPosts.map((post) => {
-                        const author = mockUsers.find(
-                            (user) => user.id === post.authorId
-                        );
-                        return (
-                            <PostCard
-                                key={post.id}
-                                postId={post.id}
-                                title={post.title}
-                                content={post.content}
-                                author={author?.username || "Unknown"}
-                                avatar={author?.avatar || ""}
-                                likes={post.likes}
-                                comments={post.comments}
-                                image={post.image}
-                            />
-                        );
-                    })}
+                    <Feed />
                 </div>
             </div>
             <RightPanel />

@@ -1,9 +1,9 @@
 import styles from "./input.module.css";
 import type {
-    InputHTMLAttributes,
-    TextareaHTMLAttributes,
     JSX,
     ReactNode,
+    InputHTMLAttributes,
+    TextareaHTMLAttributes,
 } from "react";
 
 interface Props {
@@ -13,24 +13,40 @@ interface Props {
     as?: "input" | "textarea";
 }
 
-type CombinedProps = Props &
-    InputHTMLAttributes<HTMLInputElement> &
-    TextareaHTMLAttributes<HTMLTextAreaElement>;
+type InputProps<T extends "input" | "textarea"> = Props &
+    (T extends "input"
+        ? InputHTMLAttributes<HTMLInputElement>
+        : TextareaHTMLAttributes<HTMLTextAreaElement>);
 
-export default function Input({
+export default function Input<T extends "input" | "textarea" = "input">({
     icon,
     children,
     className,
-    as = "input",
+    as,
     ...inputProps
-}: CombinedProps): JSX.Element {
-    const Element = as;
+}: InputProps<T> & { as?: T }): JSX.Element {
+    if (as === "textarea") {
+        return (
+            <div className={`${styles.inputContainer} ${className ?? ""}`}>
+                {icon}
+                <textarea
+                    {...(inputProps as TextareaHTMLAttributes<HTMLTextAreaElement>)}
+                    className={styles.input}
+                >
+                    {children}
+                </textarea>
+            </div>
+        );
+    }
 
     return (
         <div className={`${styles.inputContainer} ${className ?? ""}`}>
             {icon}
-            <Element {...inputProps} className={styles.input} />
-            {children}
+            <input
+                {...(inputProps as InputHTMLAttributes<HTMLInputElement>)}
+                className={styles.input}
+            />
+            {children && <span className={styles.extra}>{children}</span>}
         </div>
     );
 }

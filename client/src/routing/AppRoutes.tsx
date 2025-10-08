@@ -25,7 +25,6 @@ interface AppRoutesProps {
 const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
     return (
         <Routes>
-            {/* ---------- Public Pages ---------- */}
             <Route
                 path={ROUTES.HOME}
                 element={
@@ -93,7 +92,6 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
                     </Layout>
                 }
             />
-            {/* ---------- Auth Pages ---------- */}
             <Route
                 path={ROUTES.LOGIN}
                 element={
@@ -133,7 +131,6 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
                     </Layout>
                 }
             />
-            {/* ---------- Private Pages ---------- */}
             <Route
                 path={ROUTES.MY_PROFILE}
                 element={
@@ -169,6 +166,17 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
                         isHomePage={false}
                     >
                         <CreatePostPage />
+                    </Layout>
+                }
+            />
+            <Route
+                path={ROUTES.USER_PROFILE}
+                element={
+                    <Layout
+                        isAuthenticated={isAuthenticated}
+                        onLogout={onLogout}
+                    >
+                        <ProfilePage />
                     </Layout>
                 }
             />
