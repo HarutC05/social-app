@@ -8,14 +8,14 @@ const apiClient = axios.create({
 
 let isRefreshing = false;
 let failedQueue: {
-    resolve: (val?: any) => void;
+    resolve: (value?: any) => void;
     reject: (err?: any) => void;
 }[] = [];
 
-const processQueue = (error: any, tokenUpdated = false) => {
+const processQueue = (error: any) => {
     failedQueue.forEach((p) => {
         if (error) p.reject(error);
-        else p.resolve(tokenUpdated);
+        else p.resolve();
     });
     failedQueue = [];
 };
@@ -40,10 +40,10 @@ apiClient.interceptors.response.use(
 
             try {
                 await apiClient.post("/auth/refresh");
-                processQueue(null, true);
+                processQueue(null);
                 return apiClient(originalRequest);
             } catch (err) {
-                processQueue(err, false);
+                processQueue(err);
                 return Promise.reject(err);
             } finally {
                 isRefreshing = false;

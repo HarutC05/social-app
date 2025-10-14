@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import styles from "./header.module.css";
 import appLogo from "../../assets/icons/appLogo.png";
 import { ROUTES } from "../../routing/routes";
@@ -7,6 +8,7 @@ import HeaderIcons from "./components/HeaderIcons";
 import Input from "../Input/Input";
 import { searchIcon } from "../../assets/icons/searchIcon";
 import { useAuth } from "../../hooks/useAuth";
+import Button from "../Button/Button";
 import type { JSX } from "react/jsx-runtime";
 
 const DEFAULT_AVATAR =
@@ -17,9 +19,39 @@ type HeaderProps = {
 };
 
 export default function Header({ onLogout }: HeaderProps): JSX.Element {
-    const { currentUser } = useAuth();
-    const isLoggedIn = !!currentUser;
-    const avatarUrl = currentUser?.avatar_url ?? DEFAULT_AVATAR;
+    const { currentUser, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const [avatarUrl, setAvatarUrl] = useState<string>(DEFAULT_AVATAR);
+
+    useEffect(() => {
+        const avatar =
+            currentUser?.avatar_url && currentUser.avatar_url.trim() !== ""
+                ? currentUser.avatar_url
+                : DEFAULT_AVATAR;
+        setAvatarUrl(avatar);
+    }, [currentUser]);
+
+    const [searchValue, setSearchValue] = useState("");
+
+    const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const trimmed = searchValue.trim();
+        if (trimmed === "") {
+            navigate(ROUTES.HOME);
+        } else {
+            navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+        }
+    };
+
+    useEffect(() => {
+        if (searchValue.trim() === "") {
+            if (location.pathname.startsWith("/search")) {
+                navigate(ROUTES.HOME);
+            }
+        }
+    }, [searchValue, location.pathname]);
 
     return (
         <header className={styles.container}>
@@ -29,22 +61,33 @@ export default function Header({ onLogout }: HeaderProps): JSX.Element {
                 </div>
             </Link>
 
-            <div className={styles.searchContainer}>
+            <form
+                className={styles.searchContainer}
+                onSubmit={handleSearchSubmit}
+            >
                 <Input
-                    placeholder="Search posts..."
+                    name="q"
+                    placeholder="Search posts or users..."
                     type="search"
                     icon={searchIcon}
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
                 />
-            </div>
+                <Button type="submit" className={styles.searchButton}>
+                    Search
+                </Button>
+            </form>
 
             <ul className={styles.nav}>
-                <li>
-                    <Link to={ROUTES.HOME}>Home</Link>
-                </li>
+                {isAuthenticated && (
+                    <li>
+                        <Link to={ROUTES.HOME}>Home</Link>
+                    </li>
+                )}
                 <li>
                     <Link to={ROUTES.ABOUT}>About Us</Link>
                 </li>
-                {isLoggedIn ? (
+                {isAuthenticated ? (
                     <li>
                         <UserMenu avatarUrl={avatarUrl} onLogout={onLogout}>
                             <HeaderIcons />

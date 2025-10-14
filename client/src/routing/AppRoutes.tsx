@@ -1,9 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { ROUTES } from "./routes";
-import { PrivateRoute } from "./PrivateRoute";
-
+import PrivateRoute from "./PrivateRoute";
 import Layout from "../components/Layout/Layout";
-
 import HomePage from "../pages/Home/HomePage";
 import LoginPage from "../pages/Auth/LoginPage";
 import RegisterPage from "../pages/Auth/RegisterPage";
@@ -16,56 +14,57 @@ import AboutUsPage from "../pages/About/AboutPage";
 import ContactPage from "../pages/Contact/ContactPage";
 import HelpPage from "../pages/Help/HelpPage";
 import CreatePostPage from "../pages/CreatePost/CreatePost";
+import SearchResults from "../pages/Search/SearchResults";
 
-interface AppRoutesProps {
-    isAuthenticated: boolean;
-    onLogout: () => void;
-}
+import type { JSX } from "react";
 
-const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
+export default function AppRoutes(): JSX.Element {
     return (
         <Routes>
             <Route
                 path={ROUTES.HOME}
                 element={
-                    <Layout
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                        isHomePage={true}
-                    >
-                        <HomePage />
-                    </Layout>
+                    <PrivateRoute>
+                        <Layout isHomePage>
+                            <HomePage />
+                        </Layout>
+                    </PrivateRoute>
                 }
             />
             <Route
                 path={ROUTES.POST}
                 element={
-                    <Layout
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                    >
-                        <PostPage />
-                    </Layout>
+                    <PrivateRoute>
+                        <Layout>
+                            <PostPage />
+                        </Layout>
+                    </PrivateRoute>
                 }
             />
             <Route
                 path={ROUTES.PROFILE}
                 element={
-                    <Layout
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                    >
-                        <ProfilePage />
-                    </Layout>
+                    <PrivateRoute>
+                        <Layout>
+                            <ProfilePage />
+                        </Layout>
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/search"
+                element={
+                    <PrivateRoute>
+                        <Layout>
+                            <SearchResults />
+                        </Layout>
+                    </PrivateRoute>
                 }
             />
             <Route
                 path={ROUTES.ABOUT}
                 element={
-                    <Layout
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                    >
+                    <Layout>
                         <AboutUsPage />
                     </Layout>
                 }
@@ -73,10 +72,7 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
             <Route
                 path={ROUTES.HELP}
                 element={
-                    <Layout
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                    >
+                    <Layout>
                         <HelpPage />
                     </Layout>
                 }
@@ -84,10 +80,7 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
             <Route
                 path={ROUTES.CONTACT}
                 element={
-                    <Layout
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                    >
+                    <Layout>
                         <ContactPage />
                     </Layout>
                 }
@@ -95,12 +88,7 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
             <Route
                 path={ROUTES.LOGIN}
                 element={
-                    <Layout
-                        showHeader={false}
-                        showFooter={false}
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                    >
+                    <Layout showHeader={false}>
                         <LoginPage />
                     </Layout>
                 }
@@ -108,12 +96,7 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
             <Route
                 path={ROUTES.REGISTER}
                 element={
-                    <Layout
-                        showHeader={false}
-                        showFooter={false}
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                    >
+                    <Layout showHeader={false}>
                         <RegisterPage />
                     </Layout>
                 }
@@ -121,12 +104,7 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
             <Route
                 path={ROUTES.FORGOT_PASSWORD}
                 element={
-                    <Layout
-                        showHeader={false}
-                        showFooter={false}
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                    >
+                    <Layout showHeader={false} showFooter={false}>
                         <ForgotPasswordPage />
                     </Layout>
                 }
@@ -134,11 +112,8 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
             <Route
                 path={ROUTES.MY_PROFILE}
                 element={
-                    <PrivateRoute isAuthenticated={isAuthenticated}>
-                        <Layout
-                            isAuthenticated={isAuthenticated}
-                            onLogout={onLogout}
-                        >
+                    <PrivateRoute>
+                        <Layout>
                             <MyProfilePage />
                         </Layout>
                     </PrivateRoute>
@@ -147,11 +122,8 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
             <Route
                 path={ROUTES.EDIT_PROFILE}
                 element={
-                    <PrivateRoute isAuthenticated={isAuthenticated}>
-                        <Layout
-                            isAuthenticated={isAuthenticated}
-                            onLogout={onLogout}
-                        >
+                    <PrivateRoute>
+                        <Layout>
                             <EditProfile />
                         </Layout>
                     </PrivateRoute>
@@ -160,28 +132,23 @@ const AppRoutes = ({ isAuthenticated, onLogout }: AppRoutesProps) => {
             <Route
                 path={ROUTES.CREATE_POST}
                 element={
-                    <Layout
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                        isHomePage={false}
-                    >
-                        <CreatePostPage />
-                    </Layout>
+                    <PrivateRoute>
+                        <Layout>
+                            <CreatePostPage />
+                        </Layout>
+                    </PrivateRoute>
                 }
             />
             <Route
                 path={ROUTES.USER_PROFILE}
                 element={
-                    <Layout
-                        isAuthenticated={isAuthenticated}
-                        onLogout={onLogout}
-                    >
-                        <ProfilePage />
-                    </Layout>
+                    <PrivateRoute>
+                        <Layout>
+                            <ProfilePage />
+                        </Layout>
+                    </PrivateRoute>
                 }
             />
         </Routes>
     );
-};
-
-export default AppRoutes;
+}

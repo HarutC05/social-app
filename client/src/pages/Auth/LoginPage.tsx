@@ -3,8 +3,10 @@ import AccountContainer from "./components/AccountContainer";
 
 export default function LoginPage() {
     return (
-        <div className={classNames.container}>
-            <AccountContainer infoType="login" />
-        </div>
+        <>
+            <div className={classNames.container}>
+                <AccountContainer infoType="login" />
+            </div>
+        </>
     );
 }

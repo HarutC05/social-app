@@ -4,45 +4,46 @@ export interface Author {
     id: number;
     username: string;
     email: string;
-    avatar_url?: string;
+    avatar_url?: string | null;
 }
 
 export interface Post {
     id: number;
     title: string;
     content: string;
-    image_url?: string;
-    tags?: string[];
+    image_url?: string | null;
+    tags?: string[] | null;
     authorId: number;
-    author?: Author;
+    author?: Author | null;
     likesCount?: number;
     commentsCount?: number;
     created_at: string;
-    updated_at?: string;
 }
 
 export const createPost = async (post: Partial<Post>): Promise<Post> => {
     const { data } = await apiClient.post("/posts", post);
-    return data.data;
+    return data.data as Post;
 };
 
 export const getPosts = async (
     page = 1,
     limit = 10,
-    userId?: number
+    userId?: number,
+    search?: string
 ): Promise<{
     data: Post[];
     meta: { total: number; page: number; limit: number; totalPages: number };
 }> => {
     const params: Record<string, any> = { page, limit };
     if (userId) params.userId = userId;
+    if (search) params.search = search;
     const { data } = await apiClient.get("/posts", { params });
     return { data: data.data as Post[], meta: data.meta };
 };
 
 export const getPostById = async (id: number): Promise<Post> => {
     const { data } = await apiClient.get(`/posts/${id}`);
-    return data.data;
+    return data.data as Post;
 };
 
 export const updatePost = async (
@@ -50,7 +51,7 @@ export const updatePost = async (
     post: Partial<Post>
 ): Promise<Post> => {
     const { data } = await apiClient.patch(`/posts/${id}`, post);
-    return data.data;
+    return data.data as Post;
 };
 
 export const deletePost = async (id: number): Promise<void> => {

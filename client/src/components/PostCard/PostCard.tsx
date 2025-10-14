@@ -11,16 +11,21 @@ import {
     type Comment as ApiComment,
 } from "../../api/commentsApi";
 import { likePost, unlikePost } from "../../api/likesApi";
+import type { JSX } from "react/jsx-runtime";
+import { useAuth } from "../../hooks/useAuth";
+
+const DEFAULT_AVATAR =
+    "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
 
 interface PostCardProps {
     postId: number;
     title: string;
     content: string;
     author: string;
-    authorId: number;
-    avatar: string;
+    authorId?: number;
+    avatar?: string | null;
     likes: number;
-    comments: number;
+    comments?: number;
     image?: string;
 }
 
@@ -32,27 +37,50 @@ export default function PostCard({
     authorId,
     avatar,
     likes,
+    comments = 0,
     image,
-}: PostCardProps) {
+}: PostCardProps): JSX.Element {
     const [liked, setLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(likes);
     const [showComments, setShowComments] = useState(false);
     const [showAllComments, setShowAllComments] = useState(false);
     const [commentInput, setCommentInput] = useState("");
     const [commentList, setCommentList] = useState<ApiComment[]>([]);
+    const [commentCount, setCommentCount] = useState<number>(comments);
+    const { currentUser } = useAuth();
 
     useEffect(() => {
+        let mounted = true;
         if (!postId) return;
         getCommentsByPost(postId)
-            .then((data) => setCommentList(data))
-            .catch((err) => console.error("Error fetching comments:", err));
+            .then((data) => {
+                if (!mounted) return;
+                const mapped = data.map(
+                    (c) =>
+                        ({
+                            ...c,
+                            authorUsername:
+                                c.author?.username ?? `User ${c.authorId}`,
+                            authorAvatar: c.author?.avatar_url ?? undefined,
+                        }) as ApiComment
+                );
+                setCommentList(mapped);
+                setCommentCount(mapped.length);
+            })
+            .catch((err) => {
+                console.error("Error fetching comments:", err);
+            });
+        return () => {
+            mounted = false;
+        };
     }, [postId]);
 
     const toggleLike = async () => {
         try {
+            if (!currentUser) return;
             if (liked) {
                 await unlikePost(postId);
-                setLikeCount((prev) => prev - 1);
+                setLikeCount((prev) => Math.max(0, prev - 1));
             } else {
                 await likePost(postId);
                 setLikeCount((prev) => prev + 1);
@@ -73,15 +101,24 @@ export default function PostCard({
         if (!text) return;
         try {
             const newComment = await createComment(postId, text);
-            setCommentList((prev) => [newComment, ...prev]);
+            const mapped = {
+                ...newComment,
+                authorUsername:
+                    newComment.author?.username ??
+                    `User ${newComment.authorId}`,
+                authorAvatar: newComment.author?.avatar_url ?? undefined,
+            } as ApiComment;
+            setCommentList((prev) => [mapped, ...prev]);
+            setCommentCount((prev) => prev + 1);
             setCommentInput("");
+            setShowComments(true);
         } catch (error) {
             console.error("Error adding comment:", error);
         }
     };
 
     const VISIBLE_COUNT = 2;
-    const totalCount = commentList.length;
+    const totalCount = commentCount;
     const shownComments = showAllComments
         ? commentList
         : commentList.slice(0, VISIBLE_COUNT);
@@ -90,18 +127,32 @@ export default function PostCard({
     return (
         <div className={styles.card}>
             <div className={styles.header}>
-                <img
-                    src={avatar}
-                    alt={`${author}'s avatar`}
-                    className={styles.avatar}
-                />
-                <div className={styles.headerMeta}>
-                    <Link
-                        to={`/users/${authorId}`}
-                        className={styles.authorLink}
-                    >
-                        <span className={styles.author}>{author}</span>
+                {authorId ? (
+                    <Link to={`/users/${authorId}`}>
+                        <img
+                            src={avatar ?? DEFAULT_AVATAR}
+                            alt={`${author}'s avatar`}
+                            className={styles.avatar}
+                        />
                     </Link>
+                ) : (
+                    <img
+                        src={avatar ?? DEFAULT_AVATAR}
+                        alt={`${author}'s avatar`}
+                        className={styles.avatar}
+                    />
+                )}
+                <div className={styles.headerMeta}>
+                    {authorId ? (
+                        <Link
+                            to={`/users/${authorId}`}
+                            className={styles.authorLink}
+                        >
+                            <span className={styles.author}>{author}</span>
+                        </Link>
+                    ) : (
+                        <span className={styles.author}>{author}</span>
+                    )}
                 </div>
             </div>
 
@@ -162,9 +213,19 @@ export default function PostCard({
                     <div className={styles.commentsList}>
                         {shownComments.map((c) => (
                             <div key={c.id} className={styles.commentItem}>
-                                <div className={styles.commentAuthor}>
-                                    {c.authorUsername || `User ${c.authorId}`}
-                                </div>
+                                <Link
+                                    to={`/users/${c.authorId}`}
+                                    className={styles.commentAuthorRow}
+                                >
+                                    <img
+                                        src={c.authorAvatar ?? DEFAULT_AVATAR}
+                                        alt={c.authorUsername}
+                                        className={styles.commentAvatar}
+                                    />
+                                    <div className={styles.commentAuthor}>
+                                        {c.authorUsername}
+                                    </div>
+                                </Link>
                                 <div className={styles.commentText}>
                                     {c.content}
                                 </div>

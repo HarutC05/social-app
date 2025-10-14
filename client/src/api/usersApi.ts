@@ -3,14 +3,14 @@ import apiClient from "./apiClient";
 export interface User {
     id: number;
     username: string;
-    email: string;
+    email?: string;
     bio?: string | null;
     avatar_url?: string | null;
 }
 
 export const getUserById = async (id: number): Promise<User> => {
     const { data } = await apiClient.get(`/users/${id}`);
-    return data.data;
+    return data.data as User;
 };
 
 export const getUsersCount = async (): Promise<{ total: number }> => {
@@ -32,7 +32,7 @@ export const uploadAvatar = async (
     const { data } = await apiClient.post(`/users/${id}/avatar`, form, {
         headers: { "Content-Type": "multipart/form-data" },
     });
-    return { avatar_url: data.avatar_url ?? null };
+    return data.data as { avatar_url: string };
 };
 
 export const updatePassword = async (

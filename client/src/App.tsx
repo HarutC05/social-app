@@ -1,19 +1,14 @@
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routing/AppRoutes";
-import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { AuthProvider } from "./hooks/useAuth";
+import type { JSX } from "react";
 
-export default function AppWrapper() {
+export default function App(): JSX.Element {
     return (
-        <AuthProvider>
-            <BrowserRouter>
-                <AppRoutesWrapper />
-            </BrowserRouter>
-        </AuthProvider>
+        <BrowserRouter>
+            <AuthProvider>
+                <AppRoutes />
+            </AuthProvider>
+        </BrowserRouter>
     );
-}
-
-function AppRoutesWrapper() {
-    const { currentUser, logout } = useAuth();
-
-    return <AppRoutes isAuthenticated={!!currentUser} onLogout={logout} />;
 }

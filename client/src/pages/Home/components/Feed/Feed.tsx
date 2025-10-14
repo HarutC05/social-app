@@ -39,10 +39,10 @@ export default function Feed() {
                     content={post.content}
                     author={post.author?.username || "Unknown"}
                     authorId={post.author?.id}
-                    avatar={post.author?.avatar_url || ""}
+                    avatar={post.author?.avatar_url ?? undefined}
                     likes={post.likesCount || 0}
                     comments={post.commentsCount || 0}
-                    image={post.image_url || ""}
+                    image={post.image_url || undefined}
                 />
             ))}
 
@@ -59,9 +59,7 @@ export default function Feed() {
                     (num) => (
                         <button
                             key={num}
-                            className={`${styles.pageBtn} ${
-                                page === num ? styles.activePage : ""
-                            }`}
+                            className={`${styles.pageBtn} ${page === num ? styles.activePage : ""}`}
                             onClick={() => setPage(num)}
                         >
                             {num}

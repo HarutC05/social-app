@@ -6,7 +6,6 @@ import { bioIcon } from "../../assets/icons/bioIcon";
 import styles from "./editProfile.module.css";
 import { updateUser, uploadAvatar, updatePassword } from "../../api/usersApi";
 import { useAuth } from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 import type { JSX } from "react/jsx-runtime";
 
 interface EditProfilePageProps {
@@ -32,9 +31,7 @@ export default function EditProfilePage({
     onSave = () => {},
     onCancel = () => {},
 }: EditProfilePageProps): JSX.Element {
-    const { currentUser, logout } = useAuth();
-    const navigate = useNavigate();
-
+    const { currentUser, setCurrentUser } = useAuth();
     const [username, setUsername] = useState(user.username ?? "");
     const [bio, setBio] = useState(user.bio ?? "");
     const [file, setFile] = useState<File | null>(null);
@@ -49,18 +46,14 @@ export default function EditProfilePage({
     const [passwordError, setPasswordError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!currentUser) {
-            navigate("/login");
-        }
-    }, [currentUser, navigate]);
-
-    useEffect(() => {
         if (!file) {
             setPreview(user.avatar ?? DEFAULT_AVATAR);
             return;
         }
         const reader = new FileReader();
-        reader.onload = () => setPreview(String(reader.result));
+        reader.onload = () => {
+            setPreview(String(reader.result));
+        };
         reader.readAsDataURL(file);
     }, [file, user.avatar]);
 
@@ -74,7 +67,6 @@ export default function EditProfilePage({
         if (!currentUser) return;
         setLoading(true);
         setPasswordError(null);
-
         try {
             if (newPassword || confirmPassword || currentPassword) {
                 if (!currentPassword) {
@@ -103,12 +95,11 @@ export default function EditProfilePage({
             let avatar_result_url: string | null = null;
             if (file) {
                 const res = await uploadAvatar(currentUser.id, file);
-                avatar_result_url = res.avatar_url ?? DEFAULT_AVATAR;
+                avatar_result_url = res.avatar_url;
             }
 
             const payload: any = { username, bio };
             if (avatar_result_url) payload.avatar_url = avatar_result_url;
-
             const updated = await updateUser(currentUser.id, payload);
 
             if (newPassword) {
@@ -119,10 +110,17 @@ export default function EditProfilePage({
                 );
             }
 
+            const updatedUser = {
+                ...currentUser,
+                username: updated.username,
+                bio: updated.bio ?? "",
+                avatar_url: updated.avatar_url ?? null,
+            };
+            setCurrentUser(updatedUser);
             onSave({
                 username: updated.username,
                 bio: updated.bio ?? "",
-                avatar_url: updated.avatar_url ?? DEFAULT_AVATAR,
+                avatar_url: updated.avatar_url ?? null,
             });
         } catch (err: any) {
             console.error(err);

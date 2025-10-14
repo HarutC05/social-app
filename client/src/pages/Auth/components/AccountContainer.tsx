@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent, type JSX } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { emailIcon } from "../../../assets/icons/emailIcon";
 import { lockIcon } from "../../../assets/icons/lockIcon";
 import { eyeOpenIcon, eyeClosedIcon } from "../../../assets/icons/eyeIcon";
@@ -8,7 +8,7 @@ import classNames from "./accountContainer.module.css";
 import Input from "../../../components/Input/Input";
 import Button from "../../../components/Button/Button";
 import { useAuth } from "../../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import type { JSX } from "react";
 
 interface AccountContainerProps {
     infoType: "login" | "register";
@@ -29,7 +29,6 @@ export default function AccountContainer({
     const [error, setError] = useState<string | null>(null);
 
     const { login, register } = useAuth();
-    const navigate = useNavigate();
 
     const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) =>
         setUsername(e.target.value);
@@ -57,10 +56,8 @@ export default function AccountContainer({
 
             if (infoType === "login") {
                 await login({ email, password });
-                navigate("/");
             } else {
                 await register({ username, email, password });
-                navigate("/");
             }
         } catch (err: unknown) {
             console.error("Auth failed:", err);

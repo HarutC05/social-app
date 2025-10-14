@@ -5,8 +5,14 @@ export interface Comment {
     postId: number;
     authorId: number;
     authorUsername?: string;
+    authorAvatar?: string;
     content: string;
     created_at: string;
+    author?: {
+        id: number;
+        username: string;
+        avatar_url?: string | null;
+    } | null;
 }
 
 export const getCommentsByPost = async (postId: number): Promise<Comment[]> => {
