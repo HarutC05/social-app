@@ -13,6 +13,12 @@
     align-items: center;
     gap: 1.5rem;
     margin-bottom: 2rem;
+    justify-content: flex-start;
+}
+
+.centeredHeader {
+    justify-content: center;
+    text-align: center;
 }
 
 .avatar {
@@ -45,4 +51,19 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
+}
+
+.noPosts {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 1rem;
+}
+
+.noPostsText {
+    color: #cfcfcf;
+    font-size: 1.05rem;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
 }

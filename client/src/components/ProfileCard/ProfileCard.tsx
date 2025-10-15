@@ -15,16 +15,21 @@ export default function ProfileCard({
     avatar,
     bio,
 }: Props): JSX.Element {
-    const src =
-        avatar && String(avatar).trim() !== "" ? avatar : DEFAULT_AVATAR;
+    const src = avatar?.trim() ? avatar : DEFAULT_AVATAR;
 
-    const displayName =
-        username && String(username).trim() !== "" ? username : "Unknown";
-    const displayBio = bio && String(bio).trim() !== "" ? bio : "No bio yet.";
+    const displayName = username?.trim() || "Unknown";
+    const displayBio = bio?.trim() || "No bio yet.";
 
     return (
         <div className={styles.card}>
-            <img src={src} alt={displayName} className={styles.avatar} />
+            <img
+                src={src}
+                alt={displayName}
+                className={styles.avatar}
+                onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = DEFAULT_AVATAR;
+                }}
+            />
             <div className={styles.meta}>
                 <h2 className={styles.username}>{displayName}</h2>
                 <p className={styles.bio}>{displayBio}</p>

@@ -2,8 +2,13 @@ import { useEffect, useState } from "react";
 import PostCard from "../../../../components/PostCard/PostCard";
 import { getPosts, type Post } from "../../../../api/postsApi";
 import styles from "./feed.module.css";
+import type { FeedFilters } from "../LeftPanel/LeftPanel";
 
-export default function Feed() {
+interface Props {
+    filters: FeedFilters;
+}
+
+export default function Feed({ filters }: Props) {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -14,7 +19,17 @@ export default function Feed() {
         const fetchPosts = async () => {
             try {
                 setLoading(true);
-                const res = await getPosts(page, limit);
+                const res = await getPosts(
+                    page,
+                    limit,
+                    undefined, // userId
+                    filters.search ?? undefined,
+                    {
+                        sort: filters.sort ?? "recent",
+                        images: filters.images,
+                        tag: filters.tag ?? undefined,
+                    }
+                );
                 setPosts(res.data);
                 setTotalPages(res.meta.totalPages);
             } catch (error) {
@@ -24,7 +39,7 @@ export default function Feed() {
             }
         };
         fetchPosts();
-    }, [page, limit]);
+    }, [page, limit, filters]);
 
     if (loading) return <p>Loading posts...</p>;
     if (!posts.length) return <p>No posts yet.</p>;

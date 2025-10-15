@@ -21,6 +21,11 @@ interface AuthenticatedUser {
     updated_at?: Date | null;
 }
 
+interface GetUsersOptions {
+    page?: number;
+    limit?: number;
+}
+
 class UserService {
     public async findUserById(
         userId: number
@@ -109,6 +114,38 @@ class UserService {
                 updated_at: true,
             },
         });
+    }
+
+    public async getUsers(
+        options?: GetUsersOptions
+    ): Promise<{ users: AuthenticatedUser[]; total: number }> {
+        const page = options?.page && options.page > 0 ? options.page : 1;
+        const limit = options?.limit && options.limit > 0 ? options.limit : 10;
+        const skip = (page - 1) * limit;
+
+        const [total, users] = await Promise.all([
+            prisma.user.count(),
+            prisma.user.findMany({
+                select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                    bio: true,
+                    avatar_url: true,
+                    created_at: true,
+                    updated_at: true,
+                },
+                orderBy: { created_at: "desc" },
+                skip,
+                take: limit,
+            }),
+        ]);
+
+        return { users, total };
+    }
+
+    public async countUsers(): Promise<number> {
+        return await prisma.user.count();
     }
 }
 

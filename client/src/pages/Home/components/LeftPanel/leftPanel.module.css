@@ -45,4 +45,28 @@
     border-radius: 999px;
     cursor: pointer;
     font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.tag:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.active {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.clearBtn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ff7b7b;
+    padding: 6px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.clearBtn:hover {
+    background: rgba(255, 123, 123, 0.1);
 }

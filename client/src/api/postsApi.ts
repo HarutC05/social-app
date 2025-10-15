@@ -12,7 +12,7 @@ export interface Post {
     title: string;
     content: string;
     image_url?: string | null;
-    tags?: string[] | null;
+    tags?: string | null;
     authorId: number;
     author?: Author | null;
     likesCount?: number;
@@ -29,7 +29,8 @@ export const getPosts = async (
     page = 1,
     limit = 10,
     userId?: number,
-    search?: string
+    search?: string,
+    options?: { sort?: "recent" | "popular"; images?: boolean; tag?: string }
 ): Promise<{
     data: Post[];
     meta: { total: number; page: number; limit: number; totalPages: number };
@@ -37,6 +38,10 @@ export const getPosts = async (
     const params: Record<string, any> = { page, limit };
     if (userId) params.userId = userId;
     if (search) params.search = search;
+    if (options?.sort) params.sort = options.sort;
+    if (typeof options?.images === "boolean") params.images = options.images;
+    if (options?.tag) params.tag = options.tag;
+
     const { data } = await apiClient.get("/posts", { params });
     return { data: data.data as Post[], meta: data.meta };
 };

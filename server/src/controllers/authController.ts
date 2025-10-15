@@ -4,6 +4,17 @@ import { authService } from "../services/authService";
 const COOKIE_MAX_AGE_ACCESS = 1000 * 60 * 15;
 const COOKIE_MAX_AGE_REFRESH = 1000 * 60 * 60 * 24 * 7;
 
+const DEFAULT_AVATAR =
+    "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
+
+function fullUrlFor(req: Request, avatarPath?: string | null) {
+    if (!avatarPath) return DEFAULT_AVATAR;
+    if (avatarPath.startsWith("http")) return avatarPath;
+    const protocol = req.protocol;
+    const host = req.get("host");
+    return `${protocol}://${host}${avatarPath}`;
+}
+
 export async function register(
     req: Request,
     res: Response,
@@ -110,8 +121,12 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
         }
 
         const user = await authService.getMe(authUser.id);
+        const avatar_url = fullUrlFor(req, user.avatar_url ?? null);
 
-        res.status(200).json({ message: "Fetched current user", data: user });
+        res.status(200).json({
+            message: "Fetched current user",
+            data: { ...user, avatar_url },
+        });
     } catch (error) {
         next(error);
     }

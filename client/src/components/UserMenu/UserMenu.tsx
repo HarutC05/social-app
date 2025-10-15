@@ -8,6 +8,9 @@ type UserMenuProps = {
     onLogout: () => void;
 };
 
+const DEFAULT_AVATAR =
+    "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
+
 export default function UserMenu({
     avatarUrl,
     children,
@@ -27,6 +30,10 @@ export default function UserMenu({
                         src={avatarUrl}
                         alt="Profile"
                         className={styles.avatar}
+                        onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                                DEFAULT_AVATAR;
+                        }}
                     />
                 </div>
             </div>

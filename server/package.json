@@ -3,9 +3,9 @@
     "private": true,
     "version": "0.0.1",
     "scripts": {
-        "dev": "ts-node-dev src/server.ts",
+        "dev": "ts-node-dev --respawn src/server.ts",
         "build": "tsc",
-        "start": "ts-node-dev src/server.ts",
+        "start": "ts-node-dev --respawn src/server.ts",
         "prisma:init": "npx prisma init",
         "prisma:studio": "npx prisma studio",
         "prisma:migrate": "npx prisma migrate dev",

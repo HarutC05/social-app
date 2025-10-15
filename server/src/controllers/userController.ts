@@ -10,7 +10,44 @@ function fullUrlFor(req: Request, avatarPath?: string | null) {
     if (avatarPath.startsWith("http")) return avatarPath;
     const protocol = req.protocol;
     const host = req.get("host");
-    return `${protocol}://${host}${avatarPath}`;
+    const p = avatarPath.startsWith("/") ? avatarPath : `/${avatarPath}`;
+    return `${protocol}://${host}${p}`;
+}
+
+export async function getAllUsers(
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
+    try {
+        const { count: countQ, page: pageQ, limit: limitQ } = req.query;
+        const countOnly = String(countQ ?? "").toLowerCase() === "true";
+
+        if (countOnly) {
+            const total = await userService.countUsers();
+            return res
+                .status(200)
+                .json({ message: "Users count", data: [], meta: { total } });
+        }
+
+        const page = pageQ ? Number(pageQ) : 1;
+        const limit = limitQ ? Number(limitQ) : 10;
+
+        const { users, total } = await userService.getUsers({ page, limit });
+
+        const usersWithAvatar = users.map((u) => ({
+            ...u,
+            avatar_url: fullUrlFor(req, u.avatar_url ?? null),
+        }));
+
+        res.status(200).json({
+            message: "Successfully fetched users",
+            data: usersWithAvatar,
+            meta: { total, page, limit },
+        });
+    } catch (error) {
+        next(error);
+    }
 }
 
 export async function getUserById(

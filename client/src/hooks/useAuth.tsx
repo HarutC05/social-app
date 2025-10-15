@@ -17,14 +17,34 @@ import { useNavigate } from "react-router-dom";
 
 function normalizeUser(raw?: Partial<User> | null): User | null {
     if (!raw) return null;
+
+    let avatar: string | null = null;
+    if (
+        raw.avatar_url !== undefined &&
+        raw.avatar_url !== null &&
+        raw.avatar_url !== ""
+    ) {
+        const rawAvatar = String(raw.avatar_url).trim();
+
+        if (
+            rawAvatar.startsWith("http://") ||
+            rawAvatar.startsWith("https://")
+        ) {
+            avatar = rawAvatar;
+        } else if (rawAvatar.startsWith("/")) {
+            avatar = `${window.location.protocol}//${window.location.host}${rawAvatar}`;
+        } else {
+            avatar = `${window.location.protocol}//${window.location.host}/${rawAvatar}`;
+        }
+    } else {
+        avatar = null;
+    }
+
     return {
         id: (raw as any).id ?? 0,
         username: raw.username ?? "",
         email: raw.email ?? "",
-        avatar_url:
-            raw.avatar_url !== undefined && raw.avatar_url !== ""
-                ? raw.avatar_url
-                : null,
+        avatar_url: avatar,
         bio: raw.bio ?? "",
     } as User;
 }

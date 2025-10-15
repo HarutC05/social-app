@@ -8,6 +8,11 @@ export interface User {
     avatar_url?: string | null;
 }
 
+export const getUsers = async (): Promise<User[]> => {
+    const { data } = await apiClient.get("/users");
+    return data.data as User[];
+};
+
 export const getUserById = async (id: number): Promise<User> => {
     const { data } = await apiClient.get(`/users/${id}`);
     return data.data as User;
@@ -15,6 +20,7 @@ export const getUserById = async (id: number): Promise<User> => {
 
 export const getUsersCount = async (): Promise<{ total: number }> => {
     const { data } = await apiClient.get("/users?count=true");
+    // allow backend to return meta.total or fallback to data length
     return { total: data.meta?.total ?? data.data?.length ?? 0 };
 };
 

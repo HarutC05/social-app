@@ -1,96 +1,110 @@
+import { Request, Response } from "express";
 import { postsService } from "../services/postsService";
-import { Request, Response, NextFunction } from "express";
 
-export async function createPost(
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> {
+export const createPost = async (req: Request, res: Response) => {
     try {
-        const newPost = await postsService.createPost(req.body);
-        res.status(201).json({
-            message: "Successfully created post",
-            data: newPost,
-        });
-    } catch (error) {
-        next(error);
-    }
-}
+        const { title, content, image_url, tags, authorId } = req.body;
 
-export async function getPostById(
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> {
-    try {
-        const post = await postsService.getPostById(Number(req.params.id));
-        res.status(200).json({
-            message: "Successfully fetched post",
-            data: post,
+        const post = await postsService.createPost({
+            title,
+            content,
+            image_url,
+            tags,
+            authorId: Number(authorId),
         });
-    } catch (error) {
-        next(error);
-    }
-}
 
-export async function getPosts(
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> {
+        res.status(201).json({ data: post });
+    } catch (error: any) {
+        console.error("Error creating post:", error);
+        res.status(500).json({ error: "Failed to create post" });
+    }
+};
+
+export const getPosts = async (req: Request, res: Response) => {
     try {
         const page = req.query.page ? Number(req.query.page) : 1;
         const limit = req.query.limit ? Number(req.query.limit) : 10;
         const userId = req.query.userId ? Number(req.query.userId) : undefined;
-        const { posts, total } = await postsService.getPosts({
+        const search = req.query.search as string | undefined;
+        const tag = req.query.tag as string | undefined;
+        const hasImage =
+            typeof req.query.hasImage !== "undefined"
+                ? req.query.hasImage === "true"
+                : undefined;
+
+        let sort: "recent" | "popular" | undefined;
+        const sortParam = req.query.sort as string | undefined;
+        if (sortParam === "recent" || sortParam === "popular") {
+            sort = sortParam;
+        }
+
+        const result = await postsService.getPosts({
             page,
             limit,
             userId,
+            search,
+            tag,
+            hasImage,
+            sort,
         });
-        const totalPages = Math.ceil(total / (limit || 1));
-        res.status(200).json({
-            message: "Successfully fetched posts",
-            data: posts,
-            meta: { total, page, limit, totalPages },
-        });
-    } catch (error) {
-        next(error);
-    }
-}
 
-export async function updatePost(
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> {
-    try {
-        const updatedPost = await postsService.updatePost(
-            Number(req.params.id),
-            req.body
-        );
-        res.status(200).json({
-            message: "Successfully updated post",
-            data: updatedPost,
+        res.json({
+            data: result.posts,
+            meta: {
+                total: result.total,
+                page: result.page,
+                limit: result.limit,
+                totalPages: Math.ceil(result.total / result.limit),
+            },
         });
-    } catch (error) {
-        next(error);
+    } catch (error: any) {
+        console.error("Error fetching posts:", error);
+        res.status(500).json({ error: "Failed to fetch posts" });
     }
-}
+};
 
-export async function deletePost(
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> {
+export const getPostById = async (req: Request, res: Response) => {
     try {
-        const deletedPost = await postsService.deletePost(
-            Number(req.params.id)
-        );
-        res.status(200).json({
-            message: "Successfully deleted post",
-            data: deletedPost,
-        });
-    } catch (error) {
-        next(error);
+        const postId = Number(req.params.id);
+        const post = await postsService.getPostById(postId);
+
+        if (!post) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+
+        res.json({ data: post });
+    } catch (error: any) {
+        console.error("Error fetching post:", error);
+        res.status(500).json({ error: "Failed to fetch post" });
     }
-}
+};
+
+export const updatePost = async (req: Request, res: Response) => {
+    try {
+        const postId = Number(req.params.id);
+        const { title, content, tags, image_url } = req.body;
+
+        const updated = await postsService.updatePost(postId, {
+            title,
+            content,
+            tags,
+            image_url,
+        });
+
+        res.json({ data: updated });
+    } catch (error: any) {
+        console.error("Error updating post:", error);
+        res.status(500).json({ error: "Failed to update post" });
+    }
+};
+
+export const deletePost = async (req: Request, res: Response) => {
+    try {
+        const postId = Number(req.params.id);
+        const deleted = await postsService.deletePost(postId);
+        res.json({ data: deleted });
+    } catch (error: any) {
+        console.error("Error deleting post:", error);
+        res.status(500).json({ error: "Failed to delete post" });
+    }
+};

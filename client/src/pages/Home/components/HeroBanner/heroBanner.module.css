@@ -11,6 +11,7 @@
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.03);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    margin-bottom: 2rem;
 }
 
 .left {
@@ -59,7 +60,6 @@
     color: #bdbdbd;
 }
 
-/* right decorative block */
 .right {
     width: 170px;
     height: 80px;
@@ -69,14 +69,13 @@
 }
 
 .heroImage {
-    width: 150px;
-    height: 70px;
+    width: 200px;
+    height: 100px;
     border-radius: 10px;
     background: linear-gradient(135deg, #661753, #2b2b39);
     box-shadow: 0 6px 16px rgba(102, 23, 83, 0.12);
 }
 
-/* responsive */
 @media (max-width: 900px) {
     .container {
         flex-direction: column;

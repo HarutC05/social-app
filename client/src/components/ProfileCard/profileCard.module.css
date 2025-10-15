@@ -5,7 +5,8 @@
     border-radius: 10px;
     text-align: center;
     font-family: "Open Sans", sans-serif;
-    max-width: 300px;
+    min-width: 300px;
+    min-width: 300px;
     margin: 0 auto;
 }
 

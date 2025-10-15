@@ -3,9 +3,13 @@ import { useNavigate } from "react-router-dom";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
 import styles from "./createPost.module.css";
+import { createPost as apiCreatePost } from "../../api/postsApi";
+import { useAuth } from "../../hooks/useAuth";
+import type { JSX } from "react/jsx-runtime";
 
-export default function CreatePostPage() {
+export default function CreatePostPage(): JSX.Element {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [tagsText, setTagsText] = useState("");
@@ -14,6 +18,7 @@ export default function CreatePostPage() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!imageFile) {
@@ -70,49 +75,75 @@ export default function CreatePostPage() {
         setTags((t) => t.filter((x) => x !== tag));
     }
 
-    // function handleKeyTags(e: React.KeyboardEvent<HTMLInputElement>) {
-    //     if (e.key === "Enter") {
-    //         e.preventDefault();
-    //         addTagFromText();
-    //     }
-    // }
-
     function canSubmit() {
         return title.trim().length > 0 && content.trim().length > 0;
     }
 
-    function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!canSubmit()) return;
-        const newPost = {
-            id: Date.now(),
-            title: title.trim(),
-            content: content.trim(),
-            image: previewUrl,
-            tags,
-            likes: 0,
-            comments: 0,
-            createdAt: new Date().toISOString(),
-        };
-        console.log("Created post (UI only):", newPost);
-        navigate("/");
+        if (!currentUser) {
+            console.error("Not logged in");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            let image_url: string | undefined = undefined;
+
+            if (imageFile) {
+                const formData = new FormData();
+                formData.append("file", imageFile);
+
+                const uploadRes = await fetch(`http://localhost:5000/uploads`, {
+                    method: "POST",
+                    body: formData,
+                    credentials: "include",
+                });
+
+                if (!uploadRes.ok) {
+                    const txt = await uploadRes.text().catch(() => "");
+                    throw new Error(
+                        `Image upload failed: ${uploadRes.status} ${txt}`
+                    );
+                }
+
+                const uploadData = await uploadRes.json();
+                image_url = uploadData.url;
+            }
+
+            const postData = {
+                title: title.trim(),
+                content: content.trim(),
+                tags: tags.length ? tags.join(",") : undefined,
+                authorId: currentUser.id,
+                image_url,
+            };
+
+            const created = await apiCreatePost(postData);
+
+            console.log("Created post:", created);
+
+            navigate("/");
+        } catch (err) {
+            console.error("Failed to create post:", err);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
         <div className={styles.page}>
             <div className={styles.card}>
                 <h1 className={styles.title}>Create Post</h1>
-
                 <form className={styles.form} onSubmit={handleSubmit}>
                     <div className={styles.field}>
                         <label className={styles.label}>Title</label>
                         <Input
-                            icon={undefined}
                             type="text"
                             placeholder="Post title"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className={styles.title}
                         />
                     </div>
 
@@ -129,7 +160,9 @@ export default function CreatePostPage() {
 
                     <div className={styles.row}>
                         <div
-                            className={`${styles.dropzone} ${isDragging ? styles.dragging : ""}`}
+                            className={`${styles.dropzone} ${
+                                isDragging ? styles.dragging : ""
+                            }`}
                             onDragOver={(e) => {
                                 e.preventDefault();
                                 setIsDragging(true);
@@ -176,28 +209,25 @@ export default function CreatePostPage() {
                             <label className={styles.label}>Tags</label>
                             <div className={styles.tagsInputRow}>
                                 <Input
-                                    icon={undefined}
                                     type="text"
                                     placeholder="Add tags"
                                     value={tagsText}
                                     onChange={(e) =>
                                         setTagsText(e.target.value)
                                     }
-                                    // onKeyDown={handleKeyTags}
                                 />
                                 <Button type="button" onClick={addTagFromText}>
                                     Add
                                 </Button>
                             </div>
-
                             <div className={styles.tagsRow}>
                                 {tags.map((t) => (
                                     <div className={styles.tag} key={t}>
                                         <span>{t}</span>
                                         <button
+                                            type="button"
                                             className={styles.removeTag}
                                             onClick={() => removeTag(t)}
-                                            type="button"
                                         >
                                             ×
                                         </button>
@@ -208,8 +238,15 @@ export default function CreatePostPage() {
                     </div>
 
                     <div className={styles.actions}>
-                        <Button type="submit" disabled={!canSubmit()}>
-                            {canSubmit() ? "Publish" : "Fill title & content"}
+                        <Button
+                            type="submit"
+                            disabled={!canSubmit() || loading}
+                        >
+                            {loading
+                                ? "Publishing..."
+                                : canSubmit()
+                                  ? "Publish"
+                                  : "Fill title & content"}
                         </Button>
                         <Button
                             type="button"

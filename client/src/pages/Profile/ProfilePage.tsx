@@ -18,13 +18,19 @@ export default function ProfilePage() {
             setLoading(true);
             try {
                 const u = await getUserById(userId);
-                if (!u) return setUser(null);
+                if (!u) {
+                    setUser(null);
+                    setPosts([]);
+                    return;
+                }
                 setUser(u);
 
                 const res = await getPosts(1, 20, userId);
-                setPosts(res.data);
+                setPosts(res.data || []);
             } catch (err) {
-                console.error(err);
+                console.error("Error fetching profile data:", err);
+                setUser(null);
+                setPosts([]);
             } finally {
                 setLoading(false);
             }
@@ -35,9 +41,14 @@ export default function ProfilePage() {
     if (loading) return <p>Loading...</p>;
     if (!user) return <p>User not found.</p>;
 
+    const headerClass =
+        posts.length === 0
+            ? `${styles.profileHeader} ${styles.centeredHeader}`
+            : styles.profileHeader;
+
     return (
         <div className={styles.page}>
-            <div className={styles.profileHeader}>
+            <div className={headerClass}>
                 <img
                     src={user.avatar_url || ""}
                     alt={user.username}
@@ -49,22 +60,32 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            <div className={styles.posts}>
-                {posts.map((p) => (
-                    <PostCard
-                        key={p.id}
-                        postId={p.id}
-                        title={p.title}
-                        content={p.content}
-                        author={user.username}
-                        authorId={user.id}
-                        avatar={user.avatar_url || ""}
-                        likes={p.likesCount || 0}
-                        comments={p.commentsCount || 0}
-                        image={p.image_url || ""}
-                    />
-                ))}
-            </div>
+            {posts.length === 0 ? (
+                <div className={styles.noPosts}>
+                    <p className={styles.noPostsText}>
+                        {user.username
+                            ? `${user.username} has no posts yet.`
+                            : "This user has no posts yet."}
+                    </p>
+                </div>
+            ) : (
+                <div className={styles.posts}>
+                    {posts.map((p) => (
+                        <PostCard
+                            key={p.id}
+                            postId={p.id}
+                            title={p.title}
+                            content={p.content}
+                            author={user.username}
+                            authorId={user.id}
+                            avatar={user.avatar_url || ""}
+                            likes={p.likesCount || 0}
+                            comments={p.commentsCount || 0}
+                            image={p.image_url || ""}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

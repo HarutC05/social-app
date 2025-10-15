@@ -4,6 +4,9 @@
     align-items: center;
     padding: 2rem;
     text-align: center;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .title {
@@ -16,4 +19,44 @@
     margin-top: 1.5rem;
     padding: 0.75rem 2rem;
     font-size: 1rem;
+}
+
+.sectionTitle {
+    margin-top: 4rem;
+    margin-bottom: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: left;
+    width: 100%;
+    padding-left: 10px;
+}
+
+.posts {
+    width: 100%;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.noPosts {
+    width: 100%;
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.noPostsText {
+    color: #cfcfcf;
+    font-size: 1.05rem;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+}
+
+.loadingPosts {
+    margin-top: 2rem;
+    color: #cfcfcf;
 }

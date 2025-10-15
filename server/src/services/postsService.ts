@@ -12,6 +12,10 @@ interface GetPostsOptions {
     userId?: number;
     page?: number;
     limit?: number;
+    search?: string;
+    tag?: string;
+    hasImage?: boolean;
+    sort?: "recent" | "popular";
 }
 
 interface UpdatePostInput {
@@ -107,7 +111,20 @@ class PostsService {
         const page = options?.page && options.page > 0 ? options.page : 1;
         const limit = options?.limit && options.limit > 0 ? options.limit : 10;
         const skip = (page - 1) * limit;
-        const where = options?.userId ? { authorId: options.userId } : {};
+
+        const where: any = {};
+        if (options?.userId) where.authorId = options.userId;
+        if (options?.hasImage) where.NOT = { image_url: null };
+        if (options?.tag) {
+            where.tags = { contains: options.tag, mode: "insensitive" };
+        }
+        if (options?.search) {
+            where.OR = [
+                { title: { contains: options.search, mode: "insensitive" } },
+                { content: { contains: options.search, mode: "insensitive" } },
+            ];
+        }
+
         const [total, posts] = await Promise.all([
             prisma.post.count({ where }),
             prisma.post.findMany({
@@ -133,11 +150,17 @@ class PostsService {
                 take: limit,
             }),
         ]);
+
         const mapped = posts.map((p) => ({
             ...p,
             likesCount: p._count?.likes ?? 0,
             commentsCount: p._count?.comments ?? 0,
         })) as Post[];
+
+        if (options?.sort === "popular") {
+            mapped.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
+        }
+
         return { posts: mapped, total, page, limit };
     }
 

@@ -2,7 +2,9 @@ import { Router } from "express";
 import path from "path";
 import multer from "multer";
 import { auth } from "../middleware/auth";
+import fs from "fs";
 import {
+    getAllUsers,
     getUserById,
     updateUser,
     getUserByEmail,
@@ -14,7 +16,6 @@ import {
 const router = Router();
 
 const uploadsDir = path.join(__dirname, "../../uploads/avatars");
-import fs from "fs";
 if (!fs.existsSync(path.join(__dirname, "../../uploads")))
     fs.mkdirSync(path.join(__dirname, "../../uploads"));
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -27,6 +28,8 @@ const storage = multer.diskStorage({
     },
 });
 const upload = multer({ storage });
+
+router.get("/", auth, getAllUsers);
 
 router.get("/email/:email", auth, getUserByEmail);
 router.get("/:id", auth, getUserById);

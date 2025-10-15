@@ -9,6 +9,7 @@ import { userRoutes } from "./routes/userRoutes";
 import { postsRoutes } from "./routes/postsRoutes";
 import { commentsRoutes } from "./routes/commentsRoutes";
 import { likesRoutes } from "./routes/likesRoutes";
+import { uploadsRoutes } from "./routes/uploadsRoutes";
 import { errorHandler } from "./middleware/errorHandler";
 
 dotenv.config();
@@ -25,7 +26,9 @@ app.use("/api/posts", postsRoutes);
 app.use("/api", commentsRoutes);
 app.use("/api", likesRoutes);
 
-app.use("/uploads", express.static(path.join(__dirname, "../../uploads")));
+app.use("/api/uploads", uploadsRoutes);
+
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use(errorHandler);
 

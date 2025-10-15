@@ -61,22 +61,25 @@ export default function Header({ onLogout }: HeaderProps): JSX.Element {
                 </div>
             </Link>
 
-            <form
-                className={styles.searchContainer}
-                onSubmit={handleSearchSubmit}
-            >
-                <Input
-                    name="q"
-                    placeholder="Search posts or users..."
-                    type="search"
-                    icon={searchIcon}
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                />
-                <Button type="submit" className={styles.searchButton}>
-                    Search
-                </Button>
-            </form>
+            {currentUser && (
+                <form
+                    className={styles.searchContainer}
+                    onSubmit={handleSearchSubmit}
+                >
+                    <Input
+                        name="q"
+                        placeholder="Search posts or users..."
+                        type="search"
+                        icon={searchIcon}
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                    />
+
+                    <Button type="submit" className={styles.searchButton}>
+                        Search
+                    </Button>
+                </form>
+            )}
 
             <ul className={styles.nav}>
                 {isAuthenticated && (
