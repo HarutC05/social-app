@@ -51,6 +51,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         const { user, accessToken, refreshToken } = await authService.loginUser(
             req.body
         );
+
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -66,7 +67,16 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             maxAge: COOKIE_MAX_AGE_REFRESH,
         });
         res.status(200).json({ message: "Successfully logged in", data: user });
-    } catch (error) {
+    } catch (error: any) {
+        if (
+            error?.name === "InvalidCredentialsError" ||
+            error?.message?.includes("Invalid credentials")
+        ) {
+            return res
+                .status(401)
+                .json({ message: "Incorrect email or password" });
+        }
+
         next(error);
     }
 }

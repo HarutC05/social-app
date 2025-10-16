@@ -61,9 +61,18 @@ export default function AccountContainer({
             }
         } catch (err: unknown) {
             console.error("Auth failed:", err);
-            setError(
-                err instanceof Error ? err.message : "Something went wrong"
-            );
+
+            if (typeof err === "object" && err !== null && "response" in err) {
+                const axiosError = err as any;
+                const message =
+                    axiosError.response?.data?.message ||
+                    "Something went wrong";
+                setError(message);
+            } else {
+                setError(
+                    err instanceof Error ? err.message : "Something went wrong"
+                );
+            }
         } finally {
             setIsLoading(false);
         }

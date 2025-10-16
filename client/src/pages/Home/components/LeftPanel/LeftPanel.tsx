@@ -44,7 +44,7 @@ export default function LeftPanel({ filters, setFilters }: Props) {
                 <h3 className={styles.heading}>Shortcuts</h3>
                 <nav className={styles.nav}>
                     <Link to={ROUTES.HOME}>Home</Link>
-                    <Link to={ROUTES.PROFILE}>Profile</Link>
+                    <Link to={ROUTES.MY_PROFILE}>My Profile</Link>
                     <Link to={ROUTES.ABOUT}>About</Link>
                     <Link to={ROUTES.HELP}>Help</Link>
                 </nav>

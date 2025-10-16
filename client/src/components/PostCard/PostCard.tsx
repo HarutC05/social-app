@@ -130,16 +130,16 @@ export default function PostCard({
                 {authorId ? (
                     <Link to={`/users/${authorId}`}>
                         <img
+                            className={styles.avatar}
                             src={avatar ?? DEFAULT_AVATAR}
                             alt={`${author}'s avatar`}
-                            className={styles.avatar}
                         />
                     </Link>
                 ) : (
                     <img
+                        className={styles.avatar}
                         src={avatar ?? DEFAULT_AVATAR}
                         alt={`${author}'s avatar`}
-                        className={styles.avatar}
                     />
                 )}
                 <div className={styles.headerMeta}>

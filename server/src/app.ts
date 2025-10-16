@@ -3,7 +3,6 @@ import path from "path";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-
 import { authRoutes } from "./routes/authRoutes";
 import { userRoutes } from "./routes/userRoutes";
 import { postsRoutes } from "./routes/postsRoutes";
@@ -13,7 +12,6 @@ import { uploadsRoutes } from "./routes/uploadsRoutes";
 import { errorHandler } from "./middleware/errorHandler";
 
 dotenv.config();
-
 const app = express();
 
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
@@ -23,13 +21,13 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postsRoutes);
-app.use("/api", commentsRoutes);
-app.use("/api", likesRoutes);
 
 app.use("/api/uploads", uploadsRoutes);
+
+app.use("/api", commentsRoutes);
+app.use("/api", likesRoutes);
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use(errorHandler);
-
 export default app;

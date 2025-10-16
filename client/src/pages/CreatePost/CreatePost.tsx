@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../../api/apiClient";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
 import styles from "./createPost.module.css";
@@ -31,21 +32,18 @@ export default function CreatePostPage(): JSX.Element {
     }, [imageFile]);
 
     function onFileChosen(file?: File | null) {
-        if (!file) return;
-        if (!file.type.startsWith("image/")) return;
+        if (!file || !file.type.startsWith("image/")) return;
         setImageFile(file);
     }
 
     function onFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0] ?? null;
-        onFileChosen(file);
+        onFileChosen(e.target.files?.[0] ?? null);
     }
 
     function onDrop(e: React.DragEvent<HTMLDivElement>) {
         e.preventDefault();
         setIsDragging(false);
-        const file = e.dataTransfer.files?.[0] ?? null;
-        onFileChosen(file);
+        onFileChosen(e.dataTransfer.files?.[0] ?? null);
     }
 
     function removeImage() {
@@ -54,18 +52,14 @@ export default function CreatePostPage(): JSX.Element {
     }
 
     function addTagFromText() {
-        const raw = tagsText.trim();
-        if (!raw) return;
-        const parts = raw
+        const parts = tagsText
             .split(",")
             .map((p) => p.trim())
             .filter(Boolean);
         if (parts.length === 0) return;
         setTags((t) => {
             const merged = [...t];
-            for (const p of parts) {
-                if (!merged.includes(p)) merged.push(p);
-            }
+            for (const p of parts) if (!merged.includes(p)) merged.push(p);
             return merged;
         });
         setTagsText("");
@@ -81,35 +75,24 @@ export default function CreatePostPage(): JSX.Element {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (!canSubmit()) return;
-        if (!currentUser) {
-            console.error("Not logged in");
-            return;
-        }
+        if (!canSubmit() || !currentUser) return;
 
         setLoading(true);
         try {
-            let image_url: string | undefined = undefined;
+            let image_url: string | undefined;
 
             if (imageFile) {
+                if (imageFile.size === 0)
+                    throw new Error("Selected file is empty");
+
                 const formData = new FormData();
                 formData.append("file", imageFile);
 
-                const uploadRes = await fetch(`http://localhost:5000/uploads`, {
-                    method: "POST",
-                    body: formData,
-                    credentials: "include",
+                const uploadRes = await apiClient.post("/uploads", formData, {
+                    withCredentials: true,
                 });
 
-                if (!uploadRes.ok) {
-                    const txt = await uploadRes.text().catch(() => "");
-                    throw new Error(
-                        `Image upload failed: ${uploadRes.status} ${txt}`
-                    );
-                }
-
-                const uploadData = await uploadRes.json();
-                image_url = uploadData.url;
+                image_url = uploadRes.data?.url;
             }
 
             const postData = {
@@ -120,13 +103,18 @@ export default function CreatePostPage(): JSX.Element {
                 image_url,
             };
 
-            const created = await apiCreatePost(postData);
-
-            console.log("Created post:", created);
-
+            await apiCreatePost(postData);
             navigate("/");
-        } catch (err) {
-            console.error("Failed to create post:", err);
+        } catch (err: any) {
+            if (err?.response) {
+                console.error(
+                    "Failed to create post — server responded:",
+                    err.response.status,
+                    err.response.data
+                );
+            } else {
+                console.error("Failed to create post:", err);
+            }
         } finally {
             setLoading(false);
         }
