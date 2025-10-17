@@ -8,7 +8,7 @@ import classNames from "./accountContainer.module.css";
 import Input from "../../../components/Input/Input";
 import Button from "../../../components/Button/Button";
 import { useAuth } from "../../../hooks/useAuth";
-import type { JSX } from "react";
+import type { JSX } from "react/jsx-runtime";
 
 interface AccountContainerProps {
     infoType: "login" | "register";
@@ -51,9 +51,9 @@ export default function AccountContainer({
             return;
         }
 
-        try {
-            setIsLoading(true);
+        setIsLoading(true);
 
+        try {
             if (infoType === "login") {
                 await login({ email, password });
             } else {
@@ -62,17 +62,27 @@ export default function AccountContainer({
         } catch (err: unknown) {
             console.error("Auth failed:", err);
 
-            if (typeof err === "object" && err !== null && "response" in err) {
-                const axiosError = err as any;
-                const message =
-                    axiosError.response?.data?.message ||
-                    "Something went wrong";
-                setError(message);
-            } else {
-                setError(
-                    err instanceof Error ? err.message : "Something went wrong"
-                );
+            let message = "Something went wrong";
+
+            if (typeof err === "object" && err !== null && "message" in err) {
+                // err is likely an Error thrown by useAuth.normalizeAndThrowError
+                message = (err as any).message || message;
+            } else if (
+                typeof err === "object" &&
+                err !== null &&
+                "response" in err
+            ) {
+                const axiosErr = err as any;
+                message =
+                    axiosErr.response?.data?.message ||
+                    axiosErr.message ||
+                    message;
             }
+
+            if (message === "Invalid refresh token")
+                message = "Invalid credentials";
+
+            setError(message);
         } finally {
             setIsLoading(false);
         }

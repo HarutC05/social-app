@@ -122,11 +122,10 @@
 
 .error {
     color: #ff4d4f;
-    background-color: #2b0000a1;
     padding: 8px 12px;
     border-radius: 6px;
     width: 100%;
     text-align: center;
-    font-size: 0.95rem;
-    margin-top: -20px;
+    font-size: 1rem;
+    margin: -20px;
 }

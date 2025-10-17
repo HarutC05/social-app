@@ -102,6 +102,11 @@ class UserService {
     }
 
     public async deleteUser(userId: number): Promise<AuthenticatedUser> {
+        await prisma.like.deleteMany({ where: { userId } });
+        await prisma.comment.deleteMany({ where: { authorId: userId } });
+        await prisma.post.deleteMany({ where: { authorId: userId } });
+        await prisma.refreshToken.deleteMany({ where: { userId } });
+
         return await prisma.user.delete({
             where: { id: userId },
             select: {

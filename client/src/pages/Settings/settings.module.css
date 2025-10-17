@@ -1,0 +1,15 @@
+.container {
+    display: flex;
+    height: 100vh;
+    min-height: 80vh;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+.content {
+    flex: 1;
+    padding: 2rem;
+}

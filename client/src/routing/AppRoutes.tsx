@@ -15,6 +15,7 @@ import ContactPage from "../pages/Contact/ContactPage";
 import HelpPage from "../pages/Help/HelpPage";
 import CreatePostPage from "../pages/CreatePost/CreatePost";
 import SearchResults from "../pages/Search/SearchResults";
+import SettingsPage from "../pages/Settings/Settings";
 
 import type { JSX } from "react";
 
@@ -42,7 +43,7 @@ export default function AppRoutes(): JSX.Element {
                 }
             />
             <Route
-                path={ROUTES.PROFILE}
+                path={ROUTES.USER_PROFILE}
                 element={
                     <PrivateRoute>
                         <Layout>
@@ -135,6 +136,16 @@ export default function AppRoutes(): JSX.Element {
                     <PrivateRoute>
                         <Layout>
                             <CreatePostPage />
+                        </Layout>
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path={ROUTES.SETTINGS}
+                element={
+                    <PrivateRoute>
+                        <Layout>
+                            <SettingsPage />
                         </Layout>
                     </PrivateRoute>
                 }

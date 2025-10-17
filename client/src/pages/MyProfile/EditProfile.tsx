@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
 import { usernameIcon } from "../../assets/icons/usernameIcon";
 import { bioIcon } from "../../assets/icons/bioIcon";
 import styles from "./editProfile.module.css";
-import { updateUser, uploadAvatar, updatePassword } from "../../api/usersApi";
+import { updateUser, uploadAvatar } from "../../api/usersApi";
 import { useAuth } from "../../hooks/useAuth";
+import { ROUTES } from "../../routing/routes";
 import type { JSX } from "react/jsx-runtime";
 
 interface EditProfilePageProps {
@@ -40,11 +42,6 @@ export default function EditProfilePage({
     );
     const [loading, setLoading] = useState(false);
 
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [passwordError, setPasswordError] = useState<string | null>(null);
-
     useEffect(() => {
         if (!file) {
             setPreview(user.avatar ?? DEFAULT_AVATAR);
@@ -66,32 +63,7 @@ export default function EditProfilePage({
         e.preventDefault();
         if (!currentUser) return;
         setLoading(true);
-        setPasswordError(null);
         try {
-            if (newPassword || confirmPassword || currentPassword) {
-                if (!currentPassword) {
-                    setPasswordError(
-                        "Current password is required to change password"
-                    );
-                    setLoading(false);
-                    return;
-                }
-                if (newPassword !== confirmPassword) {
-                    setPasswordError(
-                        "New password and confirm password do not match"
-                    );
-                    setLoading(false);
-                    return;
-                }
-                if (newPassword && newPassword.length < 6) {
-                    setPasswordError(
-                        "New password must be at least 6 characters"
-                    );
-                    setLoading(false);
-                    return;
-                }
-            }
-
             let avatar_result_url: string | null = null;
             if (file) {
                 const res = await uploadAvatar(currentUser.id, file);
@@ -100,15 +72,8 @@ export default function EditProfilePage({
 
             const payload: any = { username, bio };
             if (avatar_result_url) payload.avatar_url = avatar_result_url;
-            const updated = await updateUser(currentUser.id, payload);
 
-            if (newPassword) {
-                await updatePassword(
-                    currentUser.id,
-                    currentPassword,
-                    newPassword
-                );
-            }
+            const updated = await updateUser(currentUser.id, payload);
 
             const updatedUser = {
                 ...currentUser,
@@ -117,6 +82,7 @@ export default function EditProfilePage({
                 avatar_url: updated.avatar_url ?? null,
             };
             setCurrentUser(updatedUser);
+
             onSave({
                 username: updated.username,
                 bio: updated.bio ?? "",
@@ -124,9 +90,6 @@ export default function EditProfilePage({
             });
         } catch (err: any) {
             console.error(err);
-            if (err?.response?.data?.message) {
-                setPasswordError(err.response.data.message);
-            }
         } finally {
             setLoading(false);
         }
@@ -192,62 +155,12 @@ export default function EditProfilePage({
                     />
                 </div>
 
-                <hr />
-
-                <h3 className={styles.subtitle}>Change password</h3>
-                <div className={styles.inputGroup}>
-                    <label htmlFor="currentPassword" className={styles.label}>
-                        Current password
-                    </label>
-                    <Input
-                        type="password"
-                        id="currentPassword"
-                        name="currentPassword"
-                        placeholder="Current password"
-                        value={currentPassword}
-                        onChange={(e) =>
-                            setCurrentPassword(
-                                (e.target as HTMLInputElement).value
-                            )
-                        }
-                    />
+                <div className={styles.settingsLink}>
+                    <p>
+                        Want to change your password or other settings? <br />
+                        <Link to={ROUTES.SETTINGS}>Go to Settings</Link>
+                    </p>
                 </div>
-                <div className={styles.inputGroup}>
-                    <label htmlFor="newPassword" className={styles.label}>
-                        New password
-                    </label>
-                    <Input
-                        type="password"
-                        id="newPassword"
-                        name="newPassword"
-                        placeholder="New password"
-                        value={newPassword}
-                        onChange={(e) =>
-                            setNewPassword((e.target as HTMLInputElement).value)
-                        }
-                    />
-                </div>
-                <div className={styles.inputGroup}>
-                    <label htmlFor="confirmPassword" className={styles.label}>
-                        Confirm new password
-                    </label>
-                    <Input
-                        type="password"
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        placeholder="Confirm new password"
-                        value={confirmPassword}
-                        onChange={(e) =>
-                            setConfirmPassword(
-                                (e.target as HTMLInputElement).value
-                            )
-                        }
-                    />
-                </div>
-
-                {passwordError && (
-                    <div className={styles.error}>{passwordError}</div>
-                )}
 
                 <div className={styles.buttonRow}>
                     <Button type="submit" disabled={loading}>

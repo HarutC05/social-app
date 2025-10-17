@@ -1,0 +1,42 @@
+.container {
+    max-width: 500px;
+}
+
+.deleteBtn {
+    border-top: 1px solid #333;
+    padding: 12px 16px;
+    width: 180px;
+    text-align: left;
+    background-color: #342247;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+    font-family: inherit;
+    font-size: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.deleteBtn:hover {
+    background-color: #281939;
+    color: white;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.error {
+    color: red;
+    font-size: 0.9rem;
+}
+
+.success {
+    color: green;
+    font-size: 0.9rem;
+}

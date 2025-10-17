@@ -20,13 +20,16 @@ export const getUserById = async (id: number): Promise<User> => {
 
 export const getUsersCount = async (): Promise<{ total: number }> => {
     const { data } = await apiClient.get("/users?count=true");
-    // allow backend to return meta.total or fallback to data length
     return { total: data.meta?.total ?? data.data?.length ?? 0 };
 };
 
 export const updateUser = async (id: number, payload: Partial<User>) => {
     const { data } = await apiClient.patch(`/users/${id}`, payload);
     return data.data as User;
+};
+
+export const deleteUser = async (id: number): Promise<void> => {
+    await apiClient.delete(`/users/${id}`);
 };
 
 export const uploadAvatar = async (

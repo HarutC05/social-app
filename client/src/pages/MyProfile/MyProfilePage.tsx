@@ -84,7 +84,9 @@ export default function MyProfilePage() {
                 Edit Profile
             </Button>
 
-            <h2 className={styles.sectionTitle}>My Posts</h2>
+            {posts.length !== 0 && (
+                <h2 className={styles.sectionTitle}>My Posts</h2>
+            )}
             {loadingPosts ? (
                 <div className={styles.loadingPosts}>Loading your posts...</div>
             ) : posts.length === 0 ? (

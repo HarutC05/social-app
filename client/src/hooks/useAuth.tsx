@@ -80,6 +80,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setCurrentUserState(normalizeUser(u));
     };
 
+    const clearAuthCookies = () => {
+        document.cookie = "accessToken=; Max-Age=0; path=/";
+        document.cookie = "refreshToken=; Max-Age=0; path=/";
+    };
+
     useEffect(() => {
         let mounted = true;
 
@@ -107,9 +112,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
                 if (!mounted) return;
 
+                if (!user) {
+                    clearAuthCookies();
+                }
+
                 setCurrentUser(user ? normalizeUser(user) : null);
             } catch (err) {
-                if (mounted) setCurrentUser(null);
+                if (mounted) {
+                    clearAuthCookies();
+                    setCurrentUser(null);
+                }
             } finally {
                 clearTimeout(timeoutId);
                 if (mounted && !timeoutFired) setIsLoading(false);
@@ -122,9 +134,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
     }, []);
 
+    function normalizeAndThrowError(err: unknown): never {
+        if (typeof err === "object" && err !== null && "response" in err) {
+            const axiosErr = err as any;
+            const backendMessage =
+                axiosErr.response?.data?.message ||
+                axiosErr.response?.data?.error ||
+                axiosErr.message;
+            throw new Error(String(backendMessage || "Something went wrong"));
+        }
+
+        if (err instanceof Error) throw err;
+        throw new Error("Something went wrong");
+    }
+
     const login = async (payload: LoginPayload) => {
         setIsLoading(true);
         try {
+            clearAuthCookies();
+
             await apiLogin(payload);
 
             const user = await getMe();
@@ -134,13 +162,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             navigate("/", { replace: true });
         } catch (err) {
             setIsLoading(false);
-            throw err;
+            normalizeAndThrowError(err);
         }
     };
 
     const register = async (payload: RegisterPayload) => {
         setIsLoading(true);
         try {
+            clearAuthCookies();
+
             await apiRegister(payload);
 
             const user = await getMe();
@@ -150,7 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             navigate("/", { replace: true });
         } catch (err) {
             setIsLoading(false);
-            throw err;
+            normalizeAndThrowError(err);
         }
     };
 
@@ -158,6 +188,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             await apiLogout();
         } finally {
+            clearAuthCookies();
             setCurrentUser(null);
             setIsLoading(false);
             navigate("/login", { replace: true });

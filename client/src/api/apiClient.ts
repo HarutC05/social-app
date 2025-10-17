@@ -5,6 +5,13 @@ const apiClient = axios.create({
     withCredentials: true,
 });
 
+function clearAuthCookies() {
+    try {
+        document.cookie = "accessToken=; Max-Age=0; path=/";
+        document.cookie = "refreshToken=; Max-Age=0; path=/";
+    } catch (e) {}
+}
+
 let isRefreshing = false;
 let failedQueue: {
     resolve: (value?: any) => void;
@@ -23,7 +30,14 @@ apiClient.interceptors.response.use(
     (response) => response,
     async (error: AxiosError & { config?: any }) => {
         const originalRequest = error.config;
+
         if (!originalRequest) return Promise.reject(error);
+
+        const reqUrl = originalRequest.url ?? "";
+        if (typeof reqUrl === "string" && reqUrl.includes("/auth/refresh")) {
+            clearAuthCookies();
+            return Promise.reject(error);
+        }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {
@@ -43,6 +57,7 @@ apiClient.interceptors.response.use(
                 return apiClient(originalRequest);
             } catch (err) {
                 processQueue(err);
+                clearAuthCookies();
                 return Promise.reject(err);
             } finally {
                 isRefreshing = false;

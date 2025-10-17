@@ -107,23 +107,38 @@ class AuthService {
     }
 
     public async refreshTokens(rawRefreshToken: string) {
-        if (!rawRefreshToken) throw new Error("No refresh token");
+        if (!rawRefreshToken) {
+            const err = new Error("No refresh token");
+            (err as any).statusCode = 401;
+            throw err;
+        }
 
         const hashed = hashToken(rawRefreshToken);
 
         const stored = await prisma.refreshToken.findFirst({
             where: { tokenHash: hashed },
         });
-        if (!stored) throw new Error("Invalid refresh token");
+        if (!stored) {
+            const err = new Error("Invalid refresh token");
+            (err as any).statusCode = 401; // 👈 this line
+            throw err;
+        }
+
         if (stored.expiresAt < new Date()) {
             await prisma.refreshToken.delete({ where: { id: stored.id } });
-            throw new Error("Refresh token expired");
+            const err = new Error("Refresh token expired");
+            (err as any).statusCode = 401; // 👈 also mark as 401
+            throw err;
         }
 
         const user = await prisma.user.findUnique({
             where: { id: stored.userId },
         });
-        if (!user) throw new Error("User not found");
+        if (!user) {
+            const err = new Error("User not found");
+            (err as any).statusCode = 401; // 👈 also unauthorized
+            throw err;
+        }
 
         await prisma.refreshToken.delete({ where: { id: stored.id } });
 
