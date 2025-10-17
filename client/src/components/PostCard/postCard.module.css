@@ -75,8 +75,44 @@
 
 .footer {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
     margin-bottom: 1rem;
+}
+
+.postActions {
+    display: flex;
+    gap: 10px;
+}
+
+.editPost {
+    height: 1rem;
+    font-size: 12px;
+    margin-top: 0;
+    border-radius: 10px;
+}
+
+.deletePost {
+    background-color: #3c2753;
+    color: white;
+    border: 1.5px solid #929292;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    padding: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1rem;
+    border-radius: 10px;
+}
+
+.deletePost:hover {
+    background-color: #281939;
+    color: white;
 }
 
 .action {

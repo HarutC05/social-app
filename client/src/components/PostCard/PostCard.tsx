@@ -4,13 +4,14 @@ import { likeIcon } from "../../assets/icons/likeIcon";
 import { commentIcon } from "../../assets/icons/commentIcon";
 import Input from "../Input/Input";
 import Button from "../Button/Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     getCommentsByPost,
     createComment,
     type Comment as ApiComment,
 } from "../../api/commentsApi";
 import { likePost, unlikePost } from "../../api/likesApi";
+import { deletePost } from "../../api/postsApi";
 import type { JSX } from "react/jsx-runtime";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -27,6 +28,7 @@ interface PostCardProps {
     likes: number;
     comments?: number;
     image?: string;
+    onDeleted?: (postId: number) => void;
 }
 
 export default function PostCard({
@@ -39,6 +41,7 @@ export default function PostCard({
     likes,
     comments = 0,
     image,
+    onDeleted,
 }: PostCardProps): JSX.Element {
     const [liked, setLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(likes);
@@ -48,6 +51,7 @@ export default function PostCard({
     const [commentList, setCommentList] = useState<ApiComment[]>([]);
     const [commentCount, setCommentCount] = useState<number>(comments);
     const { currentUser } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
         let mounted = true;
@@ -117,6 +121,23 @@ export default function PostCard({
         }
     };
 
+    const handleEdit = () => {
+        navigate(`/posts/edit/${postId}`);
+    };
+
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to delete this post?")) return;
+        try {
+            await deletePost(postId);
+            onDeleted?.(postId);
+        } catch (err) {
+            console.error("Failed to delete post:", err);
+            alert("Failed to delete post");
+        }
+    };
+
+    const canEditOrDelete = currentUser?.id === authorId;
+
     const VISIBLE_COUNT = 2;
     const totalCount = commentCount;
     const shownComments = showAllComments
@@ -171,19 +192,39 @@ export default function PostCard({
             <p className={styles.content}>{content}</p>
 
             <div className={styles.footer}>
-                <button
-                    className={`${styles.action} ${liked ? styles.liked : ""}`}
-                    onClick={toggleLike}
-                    aria-pressed={liked}
-                >
-                    {likeIcon}
-                    <span className={styles.actionCount}>{likeCount}</span>
-                </button>
+                <div className={styles.likesAndComments}>
+                    <button
+                        className={`${styles.action} ${liked ? styles.liked : ""}`}
+                        onClick={toggleLike}
+                        aria-pressed={liked}
+                    >
+                        {likeIcon}
+                        <span className={styles.actionCount}>{likeCount}</span>
+                    </button>
 
-                <button className={styles.action} onClick={toggleComments}>
-                    {commentIcon}
-                    <span className={styles.actionCount}>{totalCount}</span>
-                </button>
+                    <button className={styles.action} onClick={toggleComments}>
+                        {commentIcon}
+                        <span className={styles.actionCount}>{totalCount}</span>
+                    </button>
+                </div>
+
+                {canEditOrDelete && (
+                    <div className={styles.postActions}>
+                        <Button
+                            className={styles.editPost}
+                            type="button"
+                            onClick={handleEdit}
+                        >
+                            Edit
+                        </Button>
+                        <button
+                            className={styles.deletePost}
+                            onClick={handleDelete}
+                        >
+                            Delete
+                        </button>
+                    </div>
+                )}
             </div>
 
             {showComments && (

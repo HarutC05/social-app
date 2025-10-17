@@ -6,10 +6,11 @@ export const ROUTES = {
     EDIT_PROFILE: "/edit-profile",
     SETTINGS: "/settings",
     POST: "/post",
+    CREATE_POST: "/create",
+    EDIT_POST: "/posts/edit/:id",
     LOGIN: "/login",
     REGISTER: "/register",
     HELP: "/help",
     CONTACT: "/contact",
     FORGOT_PASSWORD: "/forgot-password",
-    CREATE_POST: "/create",
 };

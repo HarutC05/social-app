@@ -1,16 +1,27 @@
 import { Request, Response } from "express";
 import { postsService } from "../services/postsService";
 
+function getAuthUserId(req: Request): number | null {
+    const u = (req as any).user;
+    if (!u || !u.id) return null;
+    return Number(u.id);
+}
+
 export const createPost = async (req: Request, res: Response) => {
     try {
-        const { title, content, image_url, tags, authorId } = req.body;
+        const authUserId = getAuthUserId(req);
+        if (!authUserId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const { title, content, image_url, tags } = req.body;
 
         const post = await postsService.createPost({
             title,
             content,
             image_url,
             tags,
-            authorId: Number(authorId),
+            authorId: authUserId,
         });
 
         res.status(201).json({ data: post });
@@ -81,7 +92,22 @@ export const getPostById = async (req: Request, res: Response) => {
 
 export const updatePost = async (req: Request, res: Response) => {
     try {
+        const authUserId = getAuthUserId(req);
+        if (!authUserId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
         const postId = Number(req.params.id);
+        const existing = await postsService.getPostById(postId);
+        if (!existing) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+        if (existing.authorId !== authUserId) {
+            return res
+                .status(403)
+                .json({ error: "Forbidden: not the post owner" });
+        }
+
         const { title, content, tags, image_url } = req.body;
 
         const updated = await postsService.updatePost(postId, {
@@ -100,7 +126,22 @@ export const updatePost = async (req: Request, res: Response) => {
 
 export const deletePost = async (req: Request, res: Response) => {
     try {
+        const authUserId = getAuthUserId(req);
+        if (!authUserId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
         const postId = Number(req.params.id);
+        const existing = await postsService.getPostById(postId);
+        if (!existing) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+        if (existing.authorId !== authUserId) {
+            return res
+                .status(403)
+                .json({ error: "Forbidden: not the post owner" });
+        }
+
         const deleted = await postsService.deletePost(postId);
         res.json({ data: deleted });
     } catch (error: any) {

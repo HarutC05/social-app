@@ -1,16 +1,23 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
 import styles from "./createPost.module.css";
-import { createPost as apiCreatePost } from "../../api/postsApi";
+import {
+    createPost as apiCreatePost,
+    getPostById,
+    updatePost,
+} from "../../api/postsApi";
 import { useAuth } from "../../hooks/useAuth";
 import type { JSX } from "react/jsx-runtime";
 
 export default function CreatePostPage(): JSX.Element {
     const navigate = useNavigate();
+    const { id } = useParams();
+    const isEditing = Boolean(id);
     const { currentUser } = useAuth();
+
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [tagsText, setTagsText] = useState("");
@@ -22,8 +29,22 @@ export default function CreatePostPage(): JSX.Element {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        if (!isEditing || !id) return;
+        (async () => {
+            try {
+                const post = await getPostById(Number(id));
+                setTitle(post.title);
+                setContent(post.content);
+                setTags(post.tags ? post.tags.split(",") : []);
+                if (post.image_url) setPreviewUrl(post.image_url);
+            } catch (err) {
+                console.error("Failed to load post for editing:", err);
+            }
+        })();
+    }, [isEditing, id]);
+
+    useEffect(() => {
         if (!imageFile) {
-            setPreviewUrl(null);
             return;
         }
         const url = URL.createObjectURL(imageFile);
@@ -31,67 +52,19 @@ export default function CreatePostPage(): JSX.Element {
         return () => URL.revokeObjectURL(url);
     }, [imageFile]);
 
-    function onFileChosen(file?: File | null) {
-        if (!file || !file.type.startsWith("image/")) return;
-        setImageFile(file);
-    }
-
-    function onFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-        onFileChosen(e.target.files?.[0] ?? null);
-    }
-
-    function onDrop(e: React.DragEvent<HTMLDivElement>) {
-        e.preventDefault();
-        setIsDragging(false);
-        onFileChosen(e.dataTransfer.files?.[0] ?? null);
-    }
-
-    function removeImage() {
-        setImageFile(null);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-
-    function addTagFromText() {
-        const parts = tagsText
-            .split(",")
-            .map((p) => p.trim())
-            .filter(Boolean);
-        if (parts.length === 0) return;
-        setTags((t) => {
-            const merged = [...t];
-            for (const p of parts) if (!merged.includes(p)) merged.push(p);
-            return merged;
-        });
-        setTagsText("");
-    }
-
-    function removeTag(tag: string) {
-        setTags((t) => t.filter((x) => x !== tag));
-    }
-
-    function canSubmit() {
-        return title.trim().length > 0 && content.trim().length > 0;
-    }
-
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (!canSubmit() || !currentUser) return;
+        if (!currentUser) return;
+        if (!title.trim() || !content.trim()) return;
 
         setLoading(true);
         try {
-            let image_url: string | undefined;
+            let image_url = previewUrl ?? undefined;
 
             if (imageFile) {
-                if (imageFile.size === 0)
-                    throw new Error("Selected file is empty");
-
                 const formData = new FormData();
                 formData.append("file", imageFile);
-
-                const uploadRes = await apiClient.post("/uploads", formData, {
-                    withCredentials: true,
-                });
-
+                const uploadRes = await apiClient.post("/uploads", formData);
                 image_url = uploadRes.data?.url;
             }
 
@@ -103,27 +76,39 @@ export default function CreatePostPage(): JSX.Element {
                 image_url,
             };
 
-            await apiCreatePost(postData);
-            navigate("/");
-        } catch (err: any) {
-            if (err?.response) {
-                console.error(
-                    "Failed to create post — server responded:",
-                    err.response.status,
-                    err.response.data
-                );
+            if (isEditing && id) {
+                await updatePost(Number(id), postData);
             } else {
-                console.error("Failed to create post:", err);
+                await apiCreatePost(postData);
             }
+
+            navigate("/");
+        } catch (err) {
+            console.error(
+                isEditing ? "Failed to update post:" : "Failed to create post:",
+                err
+            );
         } finally {
             setLoading(false);
         }
     }
 
+    function addTagFromText() {
+        const parts = tagsText
+            .split(",")
+            .map((p) => p.trim())
+            .filter(Boolean);
+        if (parts.length === 0) return;
+        setTags((t) => Array.from(new Set([...t, ...parts])));
+        setTagsText("");
+    }
+
     return (
         <div className={styles.page}>
             <div className={styles.card}>
-                <h1 className={styles.title}>Create Post</h1>
+                <h1 className={styles.title}>
+                    {isEditing ? "Edit Post" : "Create Post"}
+                </h1>
                 <form className={styles.form} onSubmit={handleSubmit}>
                     <div className={styles.field}>
                         <label className={styles.label}>Title</label>
@@ -156,14 +141,21 @@ export default function CreatePostPage(): JSX.Element {
                                 setIsDragging(true);
                             }}
                             onDragLeave={() => setIsDragging(false)}
-                            onDrop={onDrop}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                setIsDragging(false);
+                                if (e.dataTransfer.files?.[0])
+                                    setImageFile(e.dataTransfer.files[0]);
+                            }}
                             onClick={() => fileInputRef.current?.click()}
                         >
                             <input
                                 ref={fileInputRef}
                                 type="file"
                                 accept="image/*"
-                                onChange={onFileInputChange}
+                                onChange={(e) =>
+                                    setImageFile(e.target.files?.[0] ?? null)
+                                }
                                 className={styles.fileInput}
                             />
                             {!previewUrl ? (
@@ -185,7 +177,10 @@ export default function CreatePostPage(): JSX.Element {
                                     <button
                                         type="button"
                                         className={styles.removeBtn}
-                                        onClick={removeImage}
+                                        onClick={() => {
+                                            setImageFile(null);
+                                            setPreviewUrl(null);
+                                        }}
                                     >
                                         Remove
                                     </button>
@@ -215,7 +210,11 @@ export default function CreatePostPage(): JSX.Element {
                                         <button
                                             type="button"
                                             className={styles.removeTag}
-                                            onClick={() => removeTag(t)}
+                                            onClick={() =>
+                                                setTags((prev) =>
+                                                    prev.filter((x) => x !== t)
+                                                )
+                                            }
                                         >
                                             ×
                                         </button>
@@ -226,15 +225,14 @@ export default function CreatePostPage(): JSX.Element {
                     </div>
 
                     <div className={styles.actions}>
-                        <Button
-                            type="submit"
-                            disabled={!canSubmit() || loading}
-                        >
+                        <Button type="submit" disabled={loading}>
                             {loading
-                                ? "Publishing..."
-                                : canSubmit()
-                                  ? "Publish"
-                                  : "Fill title & content"}
+                                ? isEditing
+                                    ? "Saving..."
+                                    : "Publishing..."
+                                : isEditing
+                                  ? "Save Changes"
+                                  : "Publish"}
                         </Button>
                         <Button
                             type="button"
