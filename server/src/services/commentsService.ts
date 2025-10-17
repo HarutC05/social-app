@@ -5,7 +5,7 @@ export interface Comment {
     postId: number;
     authorId: number;
     content: string;
-    created_at: Date;
+    created_at: Date | null;
     author?: {
         id: number;
         username: string;
@@ -58,6 +58,46 @@ class CommentsService {
             },
         });
         return created as Comment;
+    }
+
+    public async updateComment(
+        commentId: number,
+        userId: number,
+        content: string
+    ): Promise<Comment | null> {
+        const comment = await prisma.comment.findUnique({
+            where: { id: commentId },
+        });
+        if (!comment || comment.authorId !== userId) return null;
+
+        const updated = await prisma.comment.update({
+            where: { id: commentId },
+            data: { content },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        avatar_url: true,
+                    },
+                },
+            },
+        });
+        return updated;
+    }
+
+    public async deleteComment(
+        commentId: number,
+        userId: number
+    ): Promise<boolean> {
+        const comment = await prisma.comment.findUnique({
+            where: { id: commentId },
+        });
+        if (!comment || comment.authorId !== userId) return false;
+
+        await prisma.comment.delete({ where: { id: commentId } });
+        return true;
     }
 }
 

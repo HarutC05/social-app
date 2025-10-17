@@ -29,3 +29,22 @@ export const createComment = async (
     });
     return data.data as Comment;
 };
+
+export const updateComment = async (
+    postId: number,
+    commentId: number,
+    content: string
+): Promise<Comment> => {
+    const { data } = await apiClient.patch(
+        `/posts/${postId}/comments/${commentId}`,
+        { content }
+    );
+    return data.data as Comment;
+};
+
+export const deleteComment = async (postId: number, commentId: number) => {
+    const { data } = await apiClient.delete(
+        `/posts/${postId}/comments/${commentId}`
+    );
+    return data.data;
+};

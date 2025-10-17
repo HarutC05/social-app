@@ -2,24 +2,27 @@ import styles from "./rightPanel.module.css";
 import { getUsers, type User } from "../../../../api/usersApi";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../../../hooks/useAuth"; // ✅ import useAuth
 
 const DEFAULT_AVATAR =
     "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
 
 export default function RightPanel() {
     const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
+    const { currentUser } = useAuth();
 
     useEffect(() => {
         async function fetchUsers() {
             try {
                 const users = await getUsers();
-                setSuggestedUsers(users.slice(0, 5));
+                const filtered = users.filter((u) => u.id !== currentUser?.id);
+                setSuggestedUsers(filtered.slice(0, 5));
             } catch (err) {
                 console.error("Error fetching users:", err);
             }
         }
         fetchUsers();
-    }, []);
+    }, [currentUser]);
 
     const trending = [
         "React",

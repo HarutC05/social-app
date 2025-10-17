@@ -1,11 +1,15 @@
+// src/components/PostCard/PostCard.tsx
 import { useEffect, useState } from "react";
 import styles from "./postCard.module.css";
 import { likeIcon } from "../../assets/icons/likeIcon";
+import { Trash2, Pencil } from "lucide-react";
 import { commentIcon } from "../../assets/icons/commentIcon";
 import Input from "../Input/Input";
 import Button from "../Button/Button";
 import { Link, useNavigate } from "react-router-dom";
 import {
+    updateComment,
+    deleteComment,
     getCommentsByPost,
     createComment,
     type Comment as ApiComment,
@@ -50,6 +54,11 @@ export default function PostCard({
     const [commentInput, setCommentInput] = useState("");
     const [commentList, setCommentList] = useState<ApiComment[]>([]);
     const [commentCount, setCommentCount] = useState<number>(comments);
+    const [editingCommentId, setEditingCommentId] = useState<number | null>(
+        null
+    );
+    const [editingCommentContent, setEditingCommentContent] = useState("");
+
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
@@ -215,12 +224,15 @@ export default function PostCard({
                             type="button"
                             onClick={handleEdit}
                         >
+                            <Pencil size={14} style={{ marginRight: 6 }} />
                             Edit
                         </Button>
                         <button
                             className={styles.deletePost}
                             onClick={handleDelete}
+                            type="button"
                         >
+                            <Trash2 size={14} style={{ marginRight: 6 }} />
                             Delete
                         </button>
                     </div>
@@ -252,31 +264,195 @@ export default function PostCard({
                     </div>
 
                     <div className={styles.commentsList}>
-                        {shownComments.map((c) => (
-                            <div key={c.id} className={styles.commentItem}>
-                                <Link
-                                    to={`/users/${c.authorId}`}
-                                    className={styles.commentAuthorRow}
-                                >
-                                    <img
-                                        src={c.authorAvatar ?? DEFAULT_AVATAR}
-                                        alt={c.authorUsername}
-                                        className={styles.commentAvatar}
-                                    />
-                                    <div className={styles.commentAuthor}>
-                                        {c.authorUsername}
-                                    </div>
-                                </Link>
-                                <div className={styles.commentText}>
-                                    {c.content}
+                        {shownComments.map((c) => {
+                            const isOwner = currentUser?.id === c.authorId;
+                            const isEditing = editingCommentId === c.id;
+
+                            return (
+                                <div key={c.id} className={styles.commentItem}>
+                                    <Link
+                                        to={`/users/${c.authorId}`}
+                                        className={styles.commentAuthorRow}
+                                    >
+                                        <img
+                                            src={
+                                                c.authorAvatar ?? DEFAULT_AVATAR
+                                            }
+                                            alt={c.authorUsername}
+                                            className={styles.commentAvatar}
+                                        />
+                                        <div className={styles.commentAuthor}>
+                                            {c.authorUsername}
+                                        </div>
+                                    </Link>
+
+                                    {isEditing ? (
+                                        <div className={styles.editCommentBox}>
+                                            <input
+                                                type="text"
+                                                value={editingCommentContent}
+                                                onChange={(e) =>
+                                                    setEditingCommentContent(
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className={
+                                                    styles.editCommentInput
+                                                }
+                                            />
+                                            <div
+                                                className={
+                                                    styles.editCommentActions
+                                                }
+                                            >
+                                                <button
+                                                    type="button"
+                                                    className={
+                                                        styles.saveCommentButton
+                                                    }
+                                                    onClick={async () => {
+                                                        try {
+                                                            const updated =
+                                                                await updateComment(
+                                                                    postId,
+                                                                    c.id,
+                                                                    editingCommentContent
+                                                                );
+                                                            const mapped = {
+                                                                ...updated,
+                                                                authorUsername:
+                                                                    updated
+                                                                        .author
+                                                                        ?.username ??
+                                                                    `User ${updated.authorId}`,
+                                                                authorAvatar:
+                                                                    updated
+                                                                        .author
+                                                                        ?.avatar_url ??
+                                                                    undefined,
+                                                            } as ApiComment;
+
+                                                            setCommentList(
+                                                                (prev) =>
+                                                                    prev.map(
+                                                                        (
+                                                                            com
+                                                                        ) =>
+                                                                            com.id ===
+                                                                            c.id
+                                                                                ? mapped
+                                                                                : com
+                                                                    )
+                                                            );
+                                                            setEditingCommentId(
+                                                                null
+                                                            );
+                                                        } catch (err) {
+                                                            console.error(err);
+                                                            alert(
+                                                                "Failed to update comment"
+                                                            );
+                                                        }
+                                                    }}
+                                                >
+                                                    Save
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={
+                                                        styles.cancelCommentButton
+                                                    }
+                                                    onClick={() =>
+                                                        setEditingCommentId(
+                                                            null
+                                                        )
+                                                    }
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className={styles.commentText}>
+                                            {c.content}
+                                            {isOwner && (
+                                                <div
+                                                    className={
+                                                        styles.commentActions
+                                                    }
+                                                >
+                                                    <button
+                                                        className={
+                                                            styles.editCommentIcon
+                                                        }
+                                                        onClick={() => {
+                                                            setEditingCommentId(
+                                                                c.id
+                                                            );
+                                                            setEditingCommentContent(
+                                                                c.content
+                                                            );
+                                                        }}
+                                                        type="button"
+                                                    >
+                                                        <Pencil size={16} />
+                                                    </button>
+                                                    <button
+                                                        className={
+                                                            styles.deleteCommentIcon
+                                                        }
+                                                        onClick={async () => {
+                                                            if (
+                                                                !confirm(
+                                                                    "Delete this comment?"
+                                                                )
+                                                            )
+                                                                return;
+                                                            try {
+                                                                await deleteComment(
+                                                                    postId,
+                                                                    c.id
+                                                                );
+                                                                setCommentList(
+                                                                    (prev) =>
+                                                                        prev.filter(
+                                                                            (
+                                                                                com
+                                                                            ) =>
+                                                                                com.id !==
+                                                                                c.id
+                                                                        )
+                                                                );
+                                                                setCommentCount(
+                                                                    (prev) =>
+                                                                        prev - 1
+                                                                );
+                                                            } catch (err) {
+                                                                console.error(
+                                                                    err
+                                                                );
+                                                                alert(
+                                                                    "Failed to delete comment"
+                                                                );
+                                                            }
+                                                        }}
+                                                        type="button"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
                         {moreCount > 0 && !showAllComments && (
                             <button
                                 className={styles.viewMore}
                                 onClick={() => setShowAllComments(true)}
+                                type="button"
                             >
                                 View {moreCount} more comment
                                 {moreCount > 1 ? "s" : ""}
@@ -287,6 +463,7 @@ export default function PostCard({
                             <button
                                 className={styles.viewMore}
                                 onClick={() => setShowAllComments(false)}
+                                type="button"
                             >
                                 Hide comments
                             </button>

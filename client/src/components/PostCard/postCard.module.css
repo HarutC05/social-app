@@ -233,6 +233,10 @@
 }
 
 .commentText {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 15px;
     color: #d1d1d1;
 }
 
@@ -245,6 +249,62 @@
     text-align: left;
 }
 .viewMore:hover {
+    color: #fff;
+}
+
+.commentActions {
+    display: flex;
+}
+
+.editCommentIcon,
+.deleteCommentIcon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #bbb;
+}
+
+.editCommentIcon:hover,
+.deleteCommentIcon:hover {
+    color: #fff;
+}
+
+.editCommentBox {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.editCommentInput {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background-color: #2a2a2a;
+    color: #fff;
+}
+
+.editCommentActions {
+    display: flex;
+    gap: 6px;
+}
+
+.saveCommentButton,
+.cancelCommentButton {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.saveCommentButton {
+    background-color: #4caf50;
+    color: #fff;
+}
+
+.cancelCommentButton {
+    background-color: #555;
     color: #fff;
 }
 
