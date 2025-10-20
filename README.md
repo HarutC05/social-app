@@ -1,4 +1,4 @@
-# 🧩 Social App
+# Social App
 
 [![React](https://img.shields.io/badge/React-19.1.1-blue?logo=react&logoColor=white)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-latest-green?logo=node.js&logoColor=white)](https://nodejs.org/)
